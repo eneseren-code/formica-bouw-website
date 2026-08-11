@@ -221,12 +221,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .conversion-phone strong { font-family: var(--serif); font-size: clamp(1.5rem, 2.4vw, 2.4rem); font-weight: 400; letter-spacing: 0; text-transform: none; }
 
 .contact-hero { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(420px, .92fr); min-height: calc(100svh - 78px); background: var(--forest); color: white; }
-.contact-hero-copy { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: center; padding: clamp(4.5rem, 7vw, 7.5rem) clamp(1.3rem, 5vw, 6rem); animation: content-rise .8s ease-out both; }
+.contact-hero-copy { position: relative; z-index: 1; display: flex; min-width: 0; flex-direction: column; justify-content: center; padding: clamp(4.5rem, 7vw, 7.5rem) clamp(1.3rem, 5vw, 6rem); animation: content-rise .8s ease-out both; }
 .contact-hero-copy::before { content: ""; position: absolute; top: 7%; right: 7%; width: 150px; height: 150px; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; pointer-events: none; animation: contact-orbit 9s ease-in-out infinite; }
 .contact-hero-copy h1 { max-width: 820px; margin: 0; font-family: var(--serif); font-size: clamp(3.35rem, 6vw, 6.7rem); font-weight: 400; line-height: .92; letter-spacing: -.055em; text-wrap: balance; }
 .contact-hero-copy > p:not(.eyebrow) { max-width: 650px; margin: 1.6rem 0 2rem; color: rgba(255,255,255,.78); font-size: clamp(.98rem, 1.2vw, 1.12rem); line-height: 1.75; }
-.contact-hero-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; max-width: 760px; }
-.contact-action { display: grid; grid-template-columns: auto 1fr auto; gap: .85rem; align-items: center; min-height: 92px; padding: 1rem 1.1rem; border: 1px solid rgba(255,255,255,.24); transition: transform .25s ease, border-color .25s ease, background .25s ease; }
+.contact-hero-actions { display: grid; width: 100%; max-width: 760px; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.contact-action { display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr) auto; gap: .85rem; align-items: center; min-height: 92px; padding: 1rem 1.1rem; border: 1px solid rgba(255,255,255,.24); transition: transform .25s ease, border-color .25s ease, background .25s ease; }
 .contact-action:hover { transform: translateY(-4px); }
 .contact-action-whatsapp { border-color: #5fcb87; background: #5fcb87; color: #102a21; }
 .contact-action-whatsapp:hover { background: #72d897; }
@@ -495,7 +495,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .conversion-band h2 { font-size: clamp(2.8rem, 13vw, 4.5rem); }
   .contact-hero-copy { min-height: auto; padding: 4.5rem 1.3rem 3rem; }
   .contact-hero-copy::before { top: 2rem; right: -3rem; width: 120px; height: 120px; }
-  .contact-hero-copy h1 { font-size: clamp(3.1rem, 14.5vw, 4.8rem); }
+  .contact-hero-copy h1 { max-width: 100%; overflow-wrap: anywhere; font-size: clamp(2.65rem, 11.8vw, 4.2rem); }
   .contact-hero-copy > p:not(.eyebrow) { margin-block: 1.3rem 1.6rem; }
   .contact-hero-actions { grid-template-columns: 1fr; }
   .contact-action { min-height: 82px; }
