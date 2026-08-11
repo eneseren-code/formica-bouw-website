@@ -51,13 +51,21 @@ const bathroomDetails = {
   ],
 };
 
+function WhatsAppLogo() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 11.7a8.4 8.4 0 0 1-12.5 7.4L3.5 20.5l1.4-4.2A8.4 8.4 0 1 1 20.4 11.7Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><path d="M8.1 7.8c.2-.5.5-.5.8-.5h.6c.2 0 .4.1.5.4l.8 1.9c.1.3.1.5-.1.7l-.7.8c-.2.2-.1.4 0 .6.5 1 1.3 1.8 2.3 2.4.2.1.4.2.6 0l.9-1.1c.2-.2.4-.3.7-.2l1.9.9c.3.1.4.3.4.5 0 .6-.3 1.4-.8 1.8-.5.5-1.3.7-2 .6-1.1-.2-2.6-.8-4.2-2.2-1.3-1.2-2.3-2.8-2.6-4.1-.2-.9 0-1.8.4-2.5Z" fill="currentColor" /></svg>;
+}
+
+function InstagramLogo() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5" fill="none" stroke="currentColor" strokeWidth="1.8" /><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="1.8" /><circle cx="17.4" cy="6.7" r="1.1" fill="currentColor" /></svg>;
+}
+
 function WhatsApp({ phone, locale }: { phone: string; locale: Locale }) {
   const message = locale === "nl"
     ? "Hallo Formica Bouw, ik wil graag mijn badkamerplannen bespreken."
     : "Hello Formica Bouw, I would like to discuss my bathroom plans.";
   return (
     <a className="whatsapp-float" href={`https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`} target="_blank" rel="noreferrer" aria-label="WhatsApp">
-      <span className="whatsapp-icon">WA</span><span className="whatsapp-label">WhatsApp</span>
+      <span className="whatsapp-icon"><WhatsAppLogo /></span><span className="whatsapp-label">WhatsApp</span>
     </a>
   );
 }
@@ -69,7 +77,7 @@ function MobileActionBar({ locale, settings }: { locale: Locale; settings: Publi
   const message = isNl ? "Hallo Formica Bouw, ik wil graag mijn badkamerplannen bespreken." : "Hello Formica Bouw, I would like to discuss my bathroom plans.";
   return <nav className="mobile-action-bar" aria-label={isNl ? "Snel contact" : "Quick contact"}>
     <a href={`tel:${phone}`}><span aria-hidden="true">☎</span>{isNl ? "Bellen" : "Call"}</a>
-    <a href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`} target="_blank" rel="noreferrer"><span aria-hidden="true">WA</span>WhatsApp</a>
+    <a href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`} target="_blank" rel="noreferrer"><span><WhatsAppLogo /></span>WhatsApp</a>
     <a href={pathFor("quote", locale)}><span aria-hidden="true">↗</span>{isNl ? "Offerte" : "Quote"}</a>
   </nav>;
 }
@@ -200,13 +208,16 @@ function ContactPage({ locale, data, copy }: { locale: Locale; data: PublicData;
         <p>{copy.summary}</p>
         <div className="contact-hero-actions">
           <a className="contact-action contact-action-whatsapp" href={whatsappUrl} target="_blank" rel="noreferrer">
-            <span className="contact-action-icon" aria-hidden="true">WA</span><span><small>{isNl ? "Snel en makkelijk" : "Quick and easy"}</small><strong>{isNl ? "Stuur een WhatsApp" : "Send a WhatsApp"}</strong></span><b aria-hidden="true">↗</b>
+            <span className="contact-action-icon"><WhatsAppLogo /></span><span><small>{isNl ? "Snel en makkelijk" : "Quick and easy"}</small><strong>{isNl ? "Stuur een WhatsApp" : "Send a WhatsApp"}</strong></span><b aria-hidden="true">↗</b>
           </a>
           <a className="contact-action contact-action-phone" href={`tel:${data.settings.phone}`}>
             <span className="contact-action-icon" aria-hidden="true">☎</span><span><small>{isNl ? "Bel ons direct" : "Call us directly"}</small><strong>{data.settings.phoneDisplay}</strong></span><b aria-hidden="true">↗</b>
           </a>
         </div>
-        <a className="contact-email-link" href={`mailto:${data.settings.email}`}><span>{isNl ? "Of mail naar" : "Or email"}</span><strong>{data.settings.email}</strong><b aria-hidden="true">→</b></a>
+        <div className="contact-secondary-links">
+          <a className="contact-email-link" href={`mailto:${data.settings.email}`}><span>{isNl ? "Of mail naar" : "Or email"}</span><strong>{data.settings.email}</strong><b aria-hidden="true">→</b></a>
+          <a className="contact-instagram-link" href={String(data.settings.instagram)} target="_blank" rel="noreferrer"><InstagramLogo /><span>{isNl ? "Volg ons op" : "Follow us on"}</span><strong>Instagram</strong><b aria-hidden="true">↗</b></a>
+        </div>
         <div className="contact-promises"><span>✓ {isNl ? "Persoonlijk contact" : "Personal contact"}</span><span>✓ {isNl ? "Foto’s zijn welkom" : "Photos are welcome"}</span><span>✓ {isNl ? "Vrijblijvend kennismaken" : "No-obligation introduction"}</span></div>
       </div>
       <div className="contact-visual">
@@ -215,14 +226,7 @@ function ContactPage({ locale, data, copy }: { locale: Locale; data: PublicData;
         <a className="contact-visual-call" href={whatsappUrl} target="_blank" rel="noreferrer"><small>{isNl ? "Heeft u al een foto?" : "Already have a photo?"}</small><strong>{isNl ? "Stuur hem, dan kijken we mee" : "Send it and let’s take a look"}</strong><span>↗</span></a>
       </div>
     </section>
-    <section className="section contact-choice-section"><div className="section-heading"><div><p className="eyebrow">{isNl ? "U kiest hoe we beginnen" : "You choose how we start"}</p><h2>{isNl ? "Eén klik dichter bij uw nieuwe badkamer." : "One click closer to your new bathroom."}</h2></div><p>{isNl ? "Geen uitgebreid plan nodig. Deel wat u bezighoudt via het kanaal dat voor u prettig voelt." : "No detailed plan needed. Share what is on your mind through whichever channel feels right for you."}</p></div>
-      <div className="contact-choice-grid">
-        <a className="contact-option contact-option-primary" href={whatsappUrl} target="_blank" rel="noreferrer"><span className="contact-option-number">01</span><div><small>{isNl ? "Een vraag of foto sturen" : "Send a question or photo"}</small><h3>WhatsApp</h3><p>{isNl ? "Laagdrempelig uw badkameridee delen." : "An easy way to share your bathroom idea."}</p></div><b aria-hidden="true">↗</b></a>
-        <a className="contact-option" href={`tel:${data.settings.phone}`}><span className="contact-option-number">02</span><div><small>{isNl ? "Even persoonlijk overleggen" : "Talk it through personally"}</small><h3>{data.settings.phoneDisplay}</h3><p>{isNl ? "Tik om Formica Bouw direct te bellen." : "Tap to call Formica Bouw directly."}</p></div><b aria-hidden="true">↗</b></a>
-        <a className="contact-option" href={`mailto:${data.settings.email}`}><span className="contact-option-number">03</span><div><small>{isNl ? "Meer informatie delen" : "Share more information"}</small><h3>{isNl ? "Stuur een e-mail" : "Send an email"}</h3><p>{data.settings.email}</p></div><b aria-hidden="true">↗</b></a>
-      </div>
-    </section>
-    <section className="section contact-form-section"><div className="form-aside"><p className="eyebrow">{isNl ? "Uw idee is het begin" : "Your idea is the beginning"}</p><h2>{isNl ? "Laat ons even met u meekijken." : "Let us take a look with you."}</h2><p>{isNl ? "Vertel wat u mooi vindt, wat nu niet werkt en wat u graag anders ziet. Met een paar gegevens en foto’s kunnen we het gesprek gericht beginnen." : "Tell us what you like, what is not working now and what you would love to change. A few details and photos help us start a focused conversation."}</p><div className="form-aside-points"><span>01 — {isNl ? "Deel uw wensen" : "Share your wishes"}</span><span>02 — {isNl ? "Voeg foto’s toe" : "Add photos"}</span><span>03 — {isNl ? "Wij nemen contact op" : "We contact you"}</span></div><a className="form-aside-call" href={`tel:${data.settings.phone}`}><small>{isNl ? "Liever bellen?" : "Prefer to call?"}</small><strong>{data.settings.phoneDisplay}</strong></a></div><QuoteForm locale={locale} services={data.services} /></section>
+    <section className="section contact-form-section"><div className="form-aside"><p className="eyebrow">{isNl ? "Uw idee is het begin" : "Your idea is the beginning"}</p><h2>{isNl ? "Laat ons even met u meekijken." : "Let us take a look with you."}</h2><p>{isNl ? "Vertel wat u mooi vindt, wat nu niet werkt en wat u graag anders ziet. Met een paar gegevens en foto’s kunnen we het gesprek gericht beginnen." : "Tell us what you like, what is not working now and what you would love to change. A few details and photos help us start a focused conversation."}</p><div className="form-aside-points"><span>01 — {isNl ? "Deel uw wensen" : "Share your wishes"}</span><span>02 — {isNl ? "Voeg foto’s toe" : "Add photos"}</span><span>03 — {isNl ? "Wij nemen contact op" : "We contact you"}</span></div></div><QuoteForm locale={locale} services={data.services} /></section>
   </>;
 }
 
