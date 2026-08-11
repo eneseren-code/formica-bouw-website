@@ -19,7 +19,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     name: "Formica Bouw",
     url: siteUrl,
     email: "info@formicabouw.com",
-    telephone: "+31851091145",
+    telephone: "+31617480856",
     areaServed: { "@type": "Country", name: "Netherlands" },
     sameAs: ["https://www.instagram.com/formicabouw/"],
   };

@@ -1,8 +1,8 @@
 import type { ContentEntry, Locale } from "./types";
 
 export const defaultSettings = {
-  phone: "+31851091145",
-  phoneDisplay: "085 109 11 45",
+  phone: "+31617480856",
+  phoneDisplay: "06 17 48 08 56",
   whatsapp: "+31617480856",
   email: "info@formicabouw.com",
   kvk: "92293255",
@@ -90,10 +90,10 @@ export const seedContent: ContentEntry[] = [
   page(
     "page-contact",
     "contact",
-    "Uw nieuwe badkamer begint met één bericht",
-    "Your new bathroom starts with one message",
-    "Stuur uw wensen of een paar foto’s. We denken persoonlijk met u mee over indeling, uitvoering en de volgende stap.",
-    "Send us your ideas or a few photos. We will personally think along about the layout, delivery and the next step.",
+    "Zullen we uw badkamerplannen bespreken?",
+    "Shall we talk about your bathroom plans?",
+    "U hoeft nog niet alles uitgedacht te hebben. Een idee, vraag of foto is genoeg om samen de eerste stap te zetten.",
+    "You do not need to have everything figured out. An idea, question or photo is enough to take the first step together.",
   ),
   page(
     "page-quote",

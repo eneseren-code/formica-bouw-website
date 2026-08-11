@@ -169,6 +169,25 @@ export async function ensureDatabase() {
         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`).bind(new Date().toISOString()),
     ]);
   }
+  if (revision < 5) {
+    const settings = seedContent.find((entry) => entry.id === "settings-global");
+    const contact = seedContent.find((entry) => entry.id === "page-contact");
+    await db.batch([
+      db.prepare("UPDATE content_entries SET metadata_json = ?, updated_at = ? WHERE id = 'settings-global'")
+        .bind(JSON.stringify(settings?.metadata ?? {}), new Date().toISOString()),
+      db.prepare(`UPDATE content_entries SET
+        title_nl = ?, title_en = ?, summary_nl = ?, summary_en = ?, updated_at = ? WHERE id = 'page-contact'`)
+        .bind(
+          contact?.titleNl ?? "",
+          contact?.titleEn ?? "",
+          contact?.summaryNl ?? "",
+          contact?.summaryEn ?? "",
+          new Date().toISOString(),
+        ),
+      db.prepare(`INSERT INTO site_meta (key, value, updated_at) VALUES ('seed_revision', '5', ?)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`).bind(new Date().toISOString()),
+    ]);
+  }
   await db.prepare("PRAGMA optimize").run();
   ready = true;
   return db;

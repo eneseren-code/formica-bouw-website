@@ -31,6 +31,8 @@ test("wires canonical, hreflang, social image, sitemap and structured data", asy
   assert.match(sitemap, /nlPaths/);
   assert.match(sitemap, /enPaths/);
   assert.match(layout, /HomeAndConstructionBusiness/);
+  assert.match(layout, /\+31617480856/);
+  assert.doesNotMatch(layout, /31851091145|085 109 11 45/);
   assert.equal(og.readUInt32BE(16), 1200);
   assert.equal(og.readUInt32BE(20), 630);
 });
@@ -88,7 +90,9 @@ test("declares D1/R2, schema, migration and local source assets without Wix hotl
     readFile(file("drizzle/0000_fixed_talos.sql"), "utf8"), readFile(file("package.json"), "utf8"),
     readFile(file("components/PublicSite.tsx"), "utf8"),
   ]);
-  assert.deepEqual(JSON.parse(hosting), { d1: "DB", r2: "UPLOADS" });
+  assert.match(JSON.parse(hosting).project_id, /^appgprj_/);
+  assert.equal(JSON.parse(hosting).d1, "DB");
+  assert.equal(JSON.parse(hosting).r2, "UPLOADS");
   for (const table of ["content_entries", "media_assets", "leads", "lead_notes", "lead_media"]) assert.match(migration, new RegExp(table));
   assert.match(schema, /idempotencyKey/);
   assert.match(schema, /notificationStatus/);
