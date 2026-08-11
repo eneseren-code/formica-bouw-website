@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1786483668479,
+      "tag": "0000_fixed_talos",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1786484422686,
+      "tag": "0001_tense_stranger",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786486152891,
+      "tag": "0002_soft_doctor_doom",
+      "breakpoints": true
+    }
+  ]
+}
