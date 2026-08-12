@@ -114,6 +114,39 @@ test("keeps the mobile navigation viewport-bound and keyboard dismissible", asyn
   assert.match(styles, /\.menu-button\[aria-expanded="true"\]/);
 });
 
+test("ships a responsive video-only hero with decorative transparent sketches", async () => {
+  const [publicSite, motion, styles] = await Promise.all([
+    readFile(file("components/PublicSite.tsx"), "utf8"),
+    readFile(file("components/HomeMotion.tsx"), "utf8"),
+    readFile(file("app/globals.css"), "utf8"),
+  ]);
+
+  assert.match(publicSite, /formica-hero-mobile-poster\.webp/);
+  assert.match(publicSite, /data-desktop-src="\/media\/generated\/formica-hero\.webm"/);
+  assert.match(publicSite, /data-mobile-src="\/media\/generated\/formica-hero-mobile\.webm"/);
+  assert.match(publicSite, /sketch-floorplan\.png/);
+  assert.match(publicSite, /sketch-vanity-elevation\.png/);
+  assert.doesNotMatch(publicSite, /home-plan-card|bathroom-plan-v2|2400 × 3100|FORMICA \/ 01/);
+  assert.match(motion, /activeVideoVariant/);
+  assert.match(motion, /saveData/);
+  assert.match(motion, /effectiveType/);
+  assert.match(motion, /document\.hidden/);
+  assert.match(styles, /home-scroll-sketch-floorplan/);
+  assert.match(styles, /home-scroll-sketch-vanity/);
+  assert.doesNotMatch(styles, /home-plan-float/);
+
+  await Promise.all([
+    "formica-hero.webm",
+    "formica-hero.mp4",
+    "formica-hero-poster.webp",
+    "formica-hero-mobile.webm",
+    "formica-hero-mobile.mp4",
+    "formica-hero-mobile-poster.webp",
+    "sketch-floorplan.png",
+    "sketch-vanity-elevation.png",
+  ].map((asset) => access(file(`public/media/generated/${asset}`))));
+});
+
 test("declares D1/R2, schema, migration and local source assets without Wix hotlinks", async () => {
   const [hosting, schema, migration, packageJson, publicSite] = await Promise.all([
     readFile(file(".openai/hosting.json"), "utf8"), readFile(file("db/schema.ts"), "utf8"),

@@ -14,16 +14,21 @@ export function HomeMotion() {
     const targets = Array.from(document.querySelectorAll<HTMLElement>("[data-parallax]"));
     const revealedTargets = new WeakSet<Element>();
     const sourceEntries = video
-      ? Array.from(video.querySelectorAll<HTMLSourceElement>("source")).map((source) => ({ source, src: source.getAttribute("src") ?? "" }))
+      ? Array.from(video.querySelectorAll<HTMLSourceElement>("source")).map((source) => ({
+        source,
+        desktopSrc: source.dataset.desktopSrc ?? "",
+        mobileSrc: source.dataset.mobileSrc ?? "",
+      }))
       : [];
     let revealObserver: IntersectionObserver | null = null;
     let heroObserver: IntersectionObserver | null = null;
     let revealEnabled = false;
     let parallaxEnabled = false;
     let videoEnabled: boolean | null = null;
-    let videoSourcesAttached = Boolean(sourceEntries.some(({ src }) => src));
+    let activeVideoVariant: "desktop" | "mobile" | null = null;
     let heroVisible = true;
     let playbackAllowed = true;
+    let videoSourcesAttached = false;
     let frame = 0;
 
     const update = () => {
@@ -33,7 +38,9 @@ export function HomeMotion() {
         const rect = target.getBoundingClientRect();
         const elementCenter = rect.top + rect.height / 2;
         const progress = (elementCenter - viewportCenter) / (window.innerHeight + rect.height);
-        const distance = Math.max(-1, Math.min(1, progress)) * -34;
+        const requestedDistance = Number.parseFloat(target.dataset.parallaxDistance ?? "34");
+        const maxDistance = window.innerWidth < 768 ? 16 : Math.min(40, Number.isFinite(requestedDistance) ? requestedDistance : 34);
+        const distance = Math.max(-1, Math.min(1, progress)) * -maxDistance;
         target.style.setProperty("--parallax-y", `${distance.toFixed(2)}px`);
       });
       frame = 0;
@@ -95,24 +102,25 @@ export function HomeMotion() {
     const detachVideoSources = () => {
       if (!video || !videoSourcesAttached) return;
       video.pause();
+      hero?.classList.remove("is-video-playing");
       video.preload = "none";
       video.removeAttribute("src");
       sourceEntries.forEach(({ source }) => source.removeAttribute("src"));
       video.load();
+      activeVideoVariant = null;
       videoSourcesAttached = false;
     };
 
-    const attachVideoSources = () => {
+    const attachVideoSources = (variant: "desktop" | "mobile") => {
       if (!video) return;
-      if (videoSourcesAttached) {
-        video.preload = "auto";
-        video.load();
-        return;
-      }
-      sourceEntries.forEach(({ source, src }) => {
+      if (activeVideoVariant === variant) return;
+      detachVideoSources();
+      sourceEntries.forEach(({ source, desktopSrc, mobileSrc }) => {
+        const src = variant === "desktop" ? desktopSrc : mobileSrc;
         if (src) source.setAttribute("src", src);
       });
       video.preload = "auto";
+      activeVideoVariant = variant;
       videoSourcesAttached = true;
       video.load();
     };
@@ -127,11 +135,17 @@ export function HomeMotion() {
         playbackAllowed = false;
         video.pause();
         hero?.classList.remove("is-video-playing");
+        detachVideoSources();
       });
     };
 
     const setVideoEnabled = (enabled: boolean) => {
-      if (enabled === videoEnabled) return;
+      const nextVariant = desktop.matches ? "desktop" : "mobile";
+      const variantChanged = enabled && nextVariant !== activeVideoVariant;
+      if (enabled === videoEnabled && !variantChanged) {
+        updatePlayback();
+        return;
+      }
       videoEnabled = enabled;
       playbackAllowed = enabled;
 
@@ -142,7 +156,7 @@ export function HomeMotion() {
         return;
       }
 
-      attachVideoSources();
+      attachVideoSources(nextVariant);
       updatePlayback();
     };
 
@@ -150,11 +164,17 @@ export function HomeMotion() {
       const motionAllowed = !reducedMotion.matches;
       setRevealsEnabled(motionAllowed);
       setParallaxEnabled(motionAllowed);
-      setVideoEnabled(Boolean(video && hero && motionAllowed && desktop.matches && !constrainedConnection()));
+      setVideoEnabled(Boolean(video && hero && motionAllowed && !constrainedConnection()));
     };
 
     const markPlaying = () => {
       if (videoEnabled) hero?.classList.add("is-video-playing");
+    };
+    const handleVideoFailure = () => {
+      playbackAllowed = false;
+      video?.pause();
+      hero?.classList.remove("is-video-playing");
+      detachVideoSources();
     };
     const onVisibilityChange = () => updatePlayback();
     const onConnectionChange = () => syncMotionPreferences();
@@ -166,6 +186,7 @@ export function HomeMotion() {
       }, { threshold: 0.08 });
       heroObserver.observe(hero);
       video.addEventListener("playing", markPlaying);
+      video.addEventListener("error", handleVideoFailure);
       document.addEventListener("visibilitychange", onVisibilityChange);
     }
 
@@ -184,6 +205,7 @@ export function HomeMotion() {
       revealObserver?.disconnect();
       heroObserver?.disconnect();
       video?.removeEventListener("playing", markPlaying);
+      video?.removeEventListener("error", handleVideoFailure);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       document.documentElement.classList.remove("home-motion-ready");
     };

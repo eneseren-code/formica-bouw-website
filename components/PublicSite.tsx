@@ -121,7 +121,10 @@ function HomePage({ locale, data }: { locale: Locale; data: PublicData }) {
       <HomeMotion />
       <section className="home-hero home-cinematic-hero" data-home-hero>
         <div className="home-hero-media" aria-hidden="true">
-          <img className="home-hero-poster" src="/media/generated/formica-hero-poster.webp" alt="" fetchPriority="high" />
+          <picture className="home-hero-poster-frame">
+            <source media="(max-width: 767px)" srcSet="/media/generated/formica-hero-mobile-poster.webp" />
+            <img className="home-hero-poster" src="/media/generated/formica-hero-poster.webp" alt="" fetchPriority="high" />
+          </picture>
           <video
             className="home-hero-video"
             data-home-video
@@ -129,10 +132,9 @@ function HomePage({ locale, data }: { locale: Locale; data: PublicData }) {
             loop
             playsInline
             preload="none"
-            poster="/media/generated/formica-hero-poster.webp"
           >
-            <source src="/media/generated/formica-hero.webm" type="video/webm" />
-            <source src="/media/generated/formica-hero.mp4" type="video/mp4" />
+            <source data-desktop-src="/media/generated/formica-hero.webm" data-mobile-src="/media/generated/formica-hero-mobile.webm" type="video/webm" />
+            <source data-desktop-src="/media/generated/formica-hero.mp4" data-mobile-src="/media/generated/formica-hero-mobile.mp4" type="video/mp4" />
           </video>
         </div>
         <div className="home-hero-shade" aria-hidden="true" />
@@ -147,11 +149,6 @@ function HomePage({ locale, data }: { locale: Locale; data: PublicData }) {
             <a className="button button-accent" href={pathFor("quote", locale)}>{isNl ? "Bespreek uw badkamer" : "Discuss your bathroom"}<span aria-hidden="true">↗</span></a>
             <a className="home-text-link" href={pathFor("projects", locale)}>{isNl ? "Bekijk projecten" : "View projects"}<span aria-hidden="true">↓</span></a>
           </div>
-        </div>
-        <div className="home-plan-card" data-parallax aria-hidden="true">
-          <img src="/media/generated/bathroom-plan-v2.webp" alt="" />
-          <span className="home-plan-label">FORMICA / 01</span>
-          <span className="home-plan-measure">2400 × 3100</span>
         </div>
         <dl className="home-hero-proof" aria-label={isNl ? "Formica Bouw in het kort" : "Formica Bouw at a glance"}>
           <div><dt>{isNl ? "Specialisme" : "Speciality"}</dt><dd>{isNl ? "Complete badkamers" : "Complete bathrooms"}</dd></div>
@@ -179,6 +176,16 @@ function HomePage({ locale, data }: { locale: Locale; data: PublicData }) {
       </section>
 
       <section className="home-expertise" aria-labelledby="home-expertise-title">
+        <img
+          className="home-scroll-sketch home-scroll-sketch-floorplan"
+          src="/media/generated/sketch-floorplan.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          data-parallax
+          data-parallax-distance="40"
+        />
         <div className="home-expertise-feature" data-reveal>
           <figure className="home-expertise-image">
             <img src="/media/details/renovation-bathroom.jpg" alt={isNl ? "Zorgvuldig ontworpen moderne badkamer" : "Carefully designed modern bathroom"} loading="lazy" data-parallax />
@@ -207,6 +214,16 @@ function HomePage({ locale, data }: { locale: Locale; data: PublicData }) {
       </section>
 
       <section className="home-projects" aria-labelledby="home-projects-title">
+        <img
+          className="home-scroll-sketch home-scroll-sketch-vanity"
+          src="/media/generated/sketch-vanity-elevation.png"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          data-parallax
+          data-parallax-distance="40"
+        />
         <div className="home-section-heading" data-reveal>
           <div><p className="eyebrow">{isNl ? "Geselecteerd werk" : "Selected work"}</p><h2 id="home-projects-title">{isNl ? "Vakmanschap dat u van dichtbij wilt bekijken." : "Craftsmanship worth a closer look."}</h2></div>
           <a className="arrow-link" href={pathFor("projects", locale)}>{isNl ? "Alle projecten" : "All projects"}<span>↗</span></a>
