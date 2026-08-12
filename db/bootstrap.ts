@@ -188,6 +188,18 @@ export async function ensureDatabase() {
         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`).bind(new Date().toISOString()),
     ]);
   }
+  if (revision < 6) {
+    const partners = seedContent.filter((entry) => entry.contentType === "partner");
+    await db.batch([
+      ...partners.map((entry) =>
+        db.prepare(`UPDATE content_entries SET
+          title_nl = ?, title_en = ?, updated_at = ? WHERE id = ? AND content_type = 'partner'`)
+          .bind(entry.titleNl, entry.titleEn, new Date().toISOString(), entry.id),
+      ),
+      db.prepare(`INSERT INTO site_meta (key, value, updated_at) VALUES ('seed_revision', '6', ?)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`).bind(new Date().toISOString()),
+    ]);
+  }
   await db.prepare("PRAGMA optimize").run();
   ready = true;
   return db;

@@ -34,23 +34,6 @@ const processCopy = {
   ],
 };
 
-const bathroomDetails = {
-  nl: [
-    ["01", "Inloopdouche", "Ruimtelijk, comfortabel en zorgvuldig waterdicht afgewerkt.", "/media/details/renovation-modern-bath.jpg"],
-    ["02", "Tegelwerk", "Een rustig lijnenspel met voegen en aansluitingen die precies kloppen.", "/media/details/renovation-bathroom.jpg"],
-    ["03", "Sanitair", "Sanitair en kranen gekozen op comfort, uitstraling en dagelijks gebruik.", "/media/details/renovation-bathroom.jpg"],
-    ["04", "Verlichting", "Functioneel licht waar nodig en sfeer voor ieder moment van de dag.", "/media/details/renovation-modern-bath.jpg"],
-    ["05", "Maatwerk", "Slimme opbergruimte en meubels die perfect passen bij de ruimte.", "/media/details/kitchen-closet.jpg"],
-  ],
-  en: [
-    ["01", "Walk-in shower", "Spacious, comfortable and finished with careful waterproofing.", "/media/details/renovation-modern-bath.jpg"],
-    ["02", "Tiling", "Calm lines with joints and connections that align precisely.", "/media/details/renovation-bathroom.jpg"],
-    ["03", "Sanitaryware", "Sanitaryware and taps chosen for comfort, appearance and daily use.", "/media/details/renovation-bathroom.jpg"],
-    ["04", "Lighting", "Practical light where needed and atmosphere for every moment of the day.", "/media/details/renovation-modern-bath.jpg"],
-    ["05", "Bespoke work", "Smart storage and furniture designed to fit the space perfectly.", "/media/details/kitchen-closet.jpg"],
-  ],
-};
-
 function WhatsAppLogo() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 11.7a8.4 8.4 0 0 1-12.5 7.4L3.5 20.5l1.4-4.2A8.4 8.4 0 1 1 20.4 11.7Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><path d="M8.1 7.8c.2-.5.5-.5.8-.5h.6c.2 0 .4.1.5.4l.8 1.9c.1.3.1.5-.1.7l-.7.8c-.2.2-.1.4 0 .6.5 1 1.3 1.8 2.3 2.4.2.1.4.2.6 0l.9-1.1c.2-.2.4-.3.7-.2l1.9.9c.3.1.4.3.4.5 0 .6-.3 1.4-.8 1.8-.5.5-1.3.7-2 .6-1.1-.2-2.6-.8-4.2-2.2-1.3-1.2-2.3-2.8-2.6-4.1-.2-.9 0-1.8.4-2.5Z" fill="currentColor" /></svg>;
 }
@@ -108,73 +91,155 @@ function HomePage({ locale, data }: { locale: Locale; data: PublicData }) {
   const isNl = locale === "nl";
   const home = data.pages.find((entry) => entry.slug === "home")!;
   const copy = getLocalized(home, locale);
+  const partnerLegacyNames: Record<string, string> = {
+    "partner-winkel2": "Winkel2",
+    "partner-sani4all": "Sani4All",
+    "partner-03": "Partner",
+    "partner-04": "Partner",
+  };
+  const verifiedPartnerNames: Record<string, string> = {
+    "partner-winkel2": "Sanitair Winkel.",
+    "partner-sani4all": "Sani4All",
+    "partner-03": "Jan Bochman Architecten",
+    "partner-04": "Label UP",
+  };
+  const featuredProjects = [
+    ...data.projects.filter((project) => project.metadata.featured),
+    ...data.projects.filter((project) => !project.metadata.featured),
+  ].filter((project, index, projects) => projects.findIndex((item) => item.id === project.id) === index).slice(0, 3);
+  const whatsappMessage = isNl
+    ? "Hallo Formica Bouw, ik wil graag mijn badkamerplannen bespreken."
+    : "Hello Formica Bouw, I would like to discuss my bathroom plans.";
+  const whatsappUrl = `https://wa.me/${String(data.settings.whatsapp || data.settings.phone).replace(/\D/g, "")}?text=${encodeURIComponent(whatsappMessage)}`;
+  const heroWords = copy.title.trim().split(/\s+/);
+  const expertisePoints = isNl
+    ? ["Eén aanspreekpunt", "Alle vakdisciplines afgestemd", "Heldere planning en offerte"]
+    : ["One point of contact", "Every trade coordinated", "Clear planning and proposal"];
+
   return (
-    <>
+    <div className="home-redesign">
       <HomeMotion />
-      <section className="home-hero bathroom-hero">
-        <img className="hero-photo" data-parallax src="/media/details/renovation-modern-bath.jpg" alt={isNl ? "Lichte, compleet gerenoveerde badkamer" : "Bright, fully renovated bathroom"} />
-        <div className="hero-overlay" />
-        <div className="hero-copy hero-copy-bathroom">
-          <p className="eyebrow">{isNl ? "Badkamerrenovatie · van sloop tot oplevering" : "Bathroom renovation · from demolition to handover"}</p>
-          <h1>{copy.title}</h1><p>{copy.summary}</p>
-          <div className="hero-actions">
-            <a className="button button-accent" href={pathFor("quote", locale)}>{isNl ? "Bespreek uw badkamer" : "Discuss your bathroom"}</a>
-            <a className="play-link" href={pathFor("renovations", locale)}>{isNl ? "Zo werken wij" : "How we work"} <span>↘</span></a>
+      <section className="home-hero home-cinematic-hero" data-home-hero>
+        <div className="home-hero-media" aria-hidden="true">
+          <img className="home-hero-poster" src="/media/generated/formica-hero-poster.webp" alt="" fetchPriority="high" />
+          <video
+            className="home-hero-video"
+            data-home-video
+            muted
+            loop
+            playsInline
+            preload="none"
+            poster="/media/generated/formica-hero-poster.webp"
+          >
+            <source src="/media/generated/formica-hero.webm" type="video/webm" />
+            <source src="/media/generated/formica-hero.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <div className="home-hero-shade" aria-hidden="true" />
+        <div className="home-hero-grid" aria-hidden="true" />
+        <div className="home-hero-copy">
+          <p className="eyebrow home-hero-kicker">{isNl ? "Complete badkamerrenovatie · heel Nederland" : "Complete bathroom renovation · across the Netherlands"}</p>
+          <h1 aria-label={copy.title}>
+            {heroWords.map((word, index) => <span className="home-word" aria-hidden="true" key={`${word}-${index}`} style={{ animationDelay: `${180 + index * 55}ms` }}>{word}&nbsp;</span>)}
+          </h1>
+          <p className="home-hero-summary">{copy.summary}</p>
+          <div className="home-hero-actions">
+            <a className="button button-accent" href={pathFor("quote", locale)}>{isNl ? "Bespreek uw badkamer" : "Discuss your bathroom"}<span aria-hidden="true">↗</span></a>
+            <a className="home-text-link" href={pathFor("projects", locale)}>{isNl ? "Bekijk projecten" : "View projects"}<span aria-hidden="true">↓</span></a>
           </div>
         </div>
-        <div className="hero-specialist-card"><strong>{isNl ? "Badkamer-specialist" : "Bathroom specialist"}</strong><span>{isNl ? "Eén aanspreekpunt. Alles geregeld." : "One point of contact. Fully managed."}</span></div>
-        <div className="hero-index"><span>FORMICA BOUW</span><span>{isNl ? data.settings.serviceAreaNl : data.settings.serviceAreaEn}</span></div>
-      </section>
-
-      <section className="trust-strip"><span>KVK {data.settings.kvk}</span><span>{isNl ? "Complete badkamers" : "Complete bathrooms"}</span><span>{isNl ? "Eén vast aanspreekpunt" : "One dedicated contact"}</span><span>{data.settings.phoneDisplay}</span></section>
-
-      <section className="section bathroom-focus">
-        <div className="bathroom-focus-copy">
-          <p className="eyebrow">{isNl ? "Van lege ruimte naar dagelijks comfort" : "From empty space to everyday comfort"}</p>
-          <h2>{isNl ? "Alles komt samen in één goed ontworpen badkamer." : "Everything comes together in one well-designed bathroom."}</h2>
-          <p>{copy.body}</p>
-          <ul className="check-list">
-            <li>{isNl ? "Sloop- en voorbereidingswerk" : "Demolition and preparation"}</li>
-            <li>{isNl ? "Leidingwerk en elektra" : "Plumbing and electrical work"}</li>
-            <li>{isNl ? "Tegelwerk en sanitairmontage" : "Tiling and sanitaryware installation"}</li>
-            <li>{isNl ? "Afwerking tot de laatste kitnaad" : "Finishing down to the final seal"}</li>
-          </ul>
-          <a className="button button-dark" href={pathFor("renovations", locale)}>{isNl ? "Bekijk badkamerrenovatie" : "Explore bathroom renovation"}</a>
+        <div className="home-plan-card" data-parallax aria-hidden="true">
+          <img src="/media/generated/bathroom-plan-v2.webp" alt="" />
+          <span className="home-plan-label">FORMICA / 01</span>
+          <span className="home-plan-measure">2400 × 3100</span>
         </div>
-        <div className="bathroom-collage">
-          <figure className="bathroom-image-main"><img data-parallax src="/media/details/renovation-bathroom.jpg" alt={isNl ? "Moderne badkamer met vrijstaand bad" : "Modern bathroom with freestanding bath"} /></figure>
-          <div className="bathroom-detail-card"><span>01</span><strong>{isNl ? "Ontwerp" : "Design"}</strong><small>{isNl ? "Rust, ruimte en slimme keuzes" : "Calm, space and smart choices"}</small></div>
-          <div className="bathroom-detail-card bathroom-detail-dark"><span>02</span><strong>{isNl ? "Uitvoering" : "Delivery"}</strong><small>{isNl ? "Technisch sterk. Strak afgewerkt." : "Technically sound. Precisely finished."}</small></div>
+        <dl className="home-hero-proof" aria-label={isNl ? "Formica Bouw in het kort" : "Formica Bouw at a glance"}>
+          <div><dt>{isNl ? "Specialisme" : "Speciality"}</dt><dd>{isNl ? "Complete badkamers" : "Complete bathrooms"}</dd></div>
+          <div><dt>{isNl ? "Werkgebied" : "Service area"}</dt><dd>{isNl ? data.settings.serviceAreaNl : data.settings.serviceAreaEn}</dd></div>
+          <div><dt>{isNl ? "Contact" : "Contact"}</dt><dd>{isNl ? "Eén vast aanspreekpunt" : "One dedicated contact"}</dd></div>
+        </dl>
+      </section>
+
+      <section className="home-partners" aria-labelledby="home-partners-title">
+        <div className="home-partners-heading" data-reveal>
+          <p className="eyebrow">{isNl ? "Samenwerking" : "Collaboration"}</p>
+          <h2 id="home-partners-title">{isNl ? "Vakwerk ontstaat samen met sterke partners." : "Craftsmanship grows through strong partnerships."}</h2>
+          <span>{isNl ? "Merken en professionals waarmee wij samenwerken" : "Brands and professionals we work with"}</span>
+        </div>
+        <div className="home-partner-grid">
+          {data.partners.slice(0, 4).map((partner, index) => {
+            const savedName = getLocalized(partner, locale).title.trim();
+            const partnerName = savedName === partnerLegacyNames[partner.id] ? verifiedPartnerNames[partner.id] : savedName;
+            const content = <><span className="home-partner-index">0{index + 1}</span><img src={imageFor(partner)} alt={partnerName} loading="eager" /><strong>{partnerName}</strong>{partner.metadata.href && <span className="home-partner-arrow" aria-hidden="true">↗</span>}</>;
+            return partner.metadata.href
+              ? <a className="home-partner-card" href={String(partner.metadata.href)} target="_blank" rel="noreferrer" key={partner.id} data-reveal>{content}</a>
+              : <div className="home-partner-card" key={partner.id} data-reveal>{content}</div>;
+          })}
         </div>
       </section>
 
-      <div className="moving-line" aria-hidden="true"><div><span>{isNl ? "BADKAMERS • TEGELWERK • SANITAIR • LEIDINGWERK • AFWERKING •" : "BATHROOMS • TILING • SANITARYWARE • PLUMBING • FINISHES •"}</span><span>{isNl ? "BADKAMERS • TEGELWERK • SANITAIR • LEIDINGWERK • AFWERKING •" : "BATHROOMS • TILING • SANITARYWARE • PLUMBING • FINISHES •"}</span></div></div>
-
-      <section className="section services-section"><div className="section-heading"><div><p className="eyebrow">{isNl ? "Expertise" : "Expertise"}</p><h2>{isNl ? "Badkamers voorop. Alles eromheen geregeld." : "Bathrooms first. Everything around them handled."}</h2></div><p>{isNl ? "Wij combineren onze badkamerspecialisatie met de vakmensen en disciplines die nodig zijn voor een compleet resultaat." : "We combine our bathroom specialism with the trades and disciplines needed for a complete result."}</p></div><ServiceCards services={data.services} locale={locale} /></section>
-
-      <section className="bathroom-details-showcase">
-        <div className="detail-showcase-heading"><div><p className="eyebrow">{isNl ? "De details maken de badkamer" : "The details make the bathroom"}</p><h2>{isNl ? "Mooi om te zien. Fijn om iedere dag te gebruiken." : "Beautiful to see. A pleasure to use every day."}</h2></div><p>{isNl ? "Ontdek de onderdelen die samen zorgen voor rust, comfort en een tijdloos geheel." : "Explore the elements that come together to create calm, comfort and a timeless whole."}</p></div>
-        <div className="detail-track" aria-label={isNl ? "Badkamerdetails" : "Bathroom details"}>
-          {bathroomDetails[locale].map(([number, title, description, image], index) => <article className="detail-slide" key={number}>
-            <div className="detail-slide-image"><img src={image} alt="" loading="lazy" data-parallax={index === 0 ? "" : undefined} /></div>
-            <div className="detail-slide-copy"><span>{number}</span><div><h3>{title}</h3><p>{description}</p></div></div>
-          </article>)}
+      <section className="home-expertise" aria-labelledby="home-expertise-title">
+        <div className="home-expertise-feature" data-reveal>
+          <figure className="home-expertise-image">
+            <img src="/media/details/renovation-bathroom.jpg" alt={isNl ? "Zorgvuldig ontworpen moderne badkamer" : "Carefully designed modern bathroom"} loading="lazy" data-parallax />
+            <figcaption><span>01</span>{isNl ? "Ontwerp, techniek en afwerking als één geheel" : "Design, engineering and finishing as one"}</figcaption>
+          </figure>
+          <div className="home-expertise-copy">
+            <p className="eyebrow">{isNl ? "Badkamerspecialist" : "Bathroom specialist"}</p>
+            <h2 id="home-expertise-title">{isNl ? "Een badkamer die klopt. Van eerste leiding tot laatste voeg." : "A bathroom that works. From the first pipe to the final joint."}</h2>
+            <p>{copy.body}</p>
+            <ul>{expertisePoints.map((point) => <li key={point}>{point}</li>)}</ul>
+            <a className="arrow-link" href={pathFor("renovations", locale)}>{isNl ? "Ontdek onze aanpak" : "Discover our approach"}<span>↗</span></a>
+          </div>
         </div>
-        <p className="swipe-cue"><span>←</span>{isNl ? "Sleep om meer details te bekijken" : "Drag to explore more details"}<span>→</span></p>
+        <div className="home-service-index" data-reveal>
+          <div className="home-service-index-heading"><span>{isNl ? "Meer expertise" : "More expertise"}</span><span>{isNl ? "05 disciplines · één team" : "05 disciplines · one team"}</span></div>
+          {data.services.map((service, index) => {
+            const serviceCopy = getLocalized(service, locale);
+            return <a href={pathFor(service.slug, locale)} className={index === 0 ? "is-primary" : ""} key={service.id}>
+              <span className="home-service-number">0{index + 1}</span>
+              <strong>{serviceCopy.title}</strong>
+              <p>{serviceCopy.summary}</p>
+              <span className="home-service-arrow" aria-hidden="true">↗</span>
+            </a>;
+          })}
+        </div>
       </section>
 
-      <section className="statement-section"><p className="eyebrow">{isNl ? "Waarom Formica Bouw" : "Why Formica Bouw"}</p><p className="large-statement">{isNl ? "Een badkamer gebruikt u iedere dag. Daarom moet elk detail niet alleen mooi zijn, maar ook jarenlang goed blijven werken." : "You use a bathroom every day. That is why every detail must not only look right, but keep working beautifully for years."}</p><div className="statement-notes"><span>{isNl ? "Heldere afspraken" : "Clear expectations"}</span><span>{isNl ? "Nette uitvoering" : "Considered delivery"}</span><span>{isNl ? "Oog voor detail" : "Attention to detail"}</span></div></section>
-
-      <section className="section process-section"><div className="section-heading"><div><p className="eyebrow">{isNl ? "Van idee naar badkamer" : "From idea to bathroom"}</p><h2>{isNl ? "Vier stappen. Eén aanspreekpunt." : "Four steps. One point of contact."}</h2></div><p>{isNl ? "We houden het proces overzichtelijk en stemmen iedere discipline zorgvuldig op de volgende af." : "We keep the process clear and carefully coordinate every trade with the next."}</p></div><div className="process-grid">{processCopy[locale].map(([number, title, description]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div></section>
-
-      <section className="section projects-preview"><div className="section-heading"><div><p className="eyebrow">{isNl ? "Geselecteerd werk" : "Selected work"}</p><h2>{isNl ? "Vakmanschap dat u kunt zien." : "Craftsmanship you can see."}</h2></div><a className="arrow-link" href={pathFor("projects", locale)}>{isNl ? "Bekijk alle projecten" : "View all projects"}<span>↗</span></a></div><ProjectGallery projects={data.projects} locale={locale} compact /></section>
-
-      <section className="conversion-band">
-        <div><p className="eyebrow">{isNl ? "Heeft u al een badkamer in gedachten?" : "Already have a bathroom in mind?"}</p><h2>{isNl ? "Stuur ons een foto. Wij denken met u mee." : "Send us a photo. We will think along with you."}</h2></div>
-        <div className="conversion-actions"><a className="button button-light" href={pathFor("quote", locale)}>{isNl ? "Vraag een gesprek aan" : "Request a conversation"}</a><a className="conversion-phone" href={`tel:${data.settings.phone}`}>{isNl ? "Of bel direct" : "Or call now"}<strong>{data.settings.phoneDisplay}</strong></a></div>
+      <section className="home-projects" aria-labelledby="home-projects-title">
+        <div className="home-section-heading" data-reveal>
+          <div><p className="eyebrow">{isNl ? "Geselecteerd werk" : "Selected work"}</p><h2 id="home-projects-title">{isNl ? "Vakmanschap dat u van dichtbij wilt bekijken." : "Craftsmanship worth a closer look."}</h2></div>
+          <a className="arrow-link" href={pathFor("projects", locale)}>{isNl ? "Alle projecten" : "All projects"}<span>↗</span></a>
+        </div>
+        <div data-reveal><ProjectGallery projects={featuredProjects} locale={locale} compact /></div>
       </section>
-      <section className="partner-section"><p className="eyebrow">{isNl ? "Partners" : "Partners"}</p><div className="partner-row">{data.partners.map((partner) => <img key={partner.id} src={imageFor(partner)} alt={getLocalized(partner, locale).title} loading="lazy" />)}</div></section>
-    </>
+
+      <section className="home-approach" aria-labelledby="home-approach-title">
+        <div className="home-approach-statement" data-reveal>
+          <p className="eyebrow">{isNl ? "Waarom Formica Bouw" : "Why Formica Bouw"}</p>
+          <h2 id="home-approach-title">{isNl ? "Mooi op de eerste dag. Goed uitgevoerd voor iedere dag daarna." : "Beautiful on day one. Built right for every day after."}</h2>
+          <p>{isNl ? "We brengen ontwerp, techniek en uitvoering samen in één overzichtelijk proces." : "We bring design, engineering and delivery together in one clear process."}</p>
+          <span className="home-approach-mark" aria-hidden="true">F / B</span>
+        </div>
+        <ol className="home-process-list" data-reveal>
+          {processCopy[locale].map(([number, title, description]) => <li key={number}><span>{number}</span><div><h3>{title}</h3><p>{description}</p></div></li>)}
+        </ol>
+      </section>
+
+      <section className="home-conversion" data-reveal>
+        <div className="home-conversion-image"><img src="/media/projects/project-08.jpg" alt="" loading="lazy" /></div>
+        <div className="home-conversion-copy">
+          <p className="eyebrow">{isNl ? "Uw badkamer begint met een bericht" : "Your bathroom starts with a message"}</p>
+          <h2>{isNl ? "Een idee, vraag of foto is genoeg voor de eerste stap." : "An idea, question or photo is enough for the first step."}</h2>
+          <p>{isNl ? "Vertel ons wat u wilt veranderen. Wij bekijken de mogelijkheden en nemen persoonlijk contact met u op." : "Tell us what you would like to change. We will review the possibilities and contact you personally."}</p>
+          <div className="home-conversion-actions">
+            <a className="button home-whatsapp-button" href={whatsappUrl} target="_blank" rel="noreferrer"><WhatsAppLogo />{isNl ? "Stuur een WhatsApp" : "Send a WhatsApp"}</a>
+            <a className="button button-light" href={pathFor("quote", locale)}>{isNl ? "Vraag een offerte aan" : "Request a quote"}<span aria-hidden="true">↗</span></a>
+          </div>
+          <a className="home-conversion-phone" href={`tel:${data.settings.phone}`}>{isNl ? "Liever bellen?" : "Prefer to call?"} <strong>{data.settings.phoneDisplay}</strong></a>
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -221,7 +286,7 @@ function ContactPage({ locale, data, copy }: { locale: Locale; data: PublicData;
         <div className="contact-promises"><span>✓ {isNl ? "Persoonlijk contact" : "Personal contact"}</span><span>✓ {isNl ? "Foto’s zijn welkom" : "Photos are welcome"}</span><span>✓ {isNl ? "Vrijblijvend kennismaken" : "No-obligation introduction"}</span></div>
       </div>
       <div className="contact-visual">
-        <img src="/media/details/renovation-modern-bath.jpg" alt={isNl ? "Moderne badkamer door Formica Bouw" : "Modern bathroom by Formica Bouw"} />
+        <img src="/media/details/renovation-modern-bath.jpg" alt={isNl ? "Sfeervolle moderne badkamer" : "Atmospheric modern bathroom"} />
         <div className="contact-visual-note"><span aria-hidden="true">✦</span><p>{isNl ? "Een foto van uw huidige badkamer zegt vaak al veel." : "A photo of your current bathroom often tells us a lot."}</p></div>
         <a className="contact-visual-call" href={whatsappUrl} target="_blank" rel="noreferrer"><small>{isNl ? "Heeft u al een foto?" : "Already have a photo?"}</small><strong>{isNl ? "Stuur hem, dan kijken we mee" : "Send it and let’s take a look"}</strong><span>↗</span></a>
       </div>

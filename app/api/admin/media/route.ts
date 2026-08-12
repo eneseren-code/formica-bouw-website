@@ -39,9 +39,23 @@ export async function PATCH(request: Request) {
   const raw = safeJson(await request.json());
   const id = typeof raw?.id === "string" ? raw.id : "";
   if (!id) return Response.json({ error: "Media id is required" }, { status: 400 });
+  if (typeof raw?.isPublic !== "boolean") return Response.json({ error: "Media visibility must be true or false" }, { status: 400 });
   const db = await ensureDatabase();
+  const exists = await db.prepare("SELECT id FROM media_assets WHERE id = ?").bind(id).first<{ id: string }>();
+  if (!exists) return Response.json({ error: "Media asset not found" }, { status: 404 });
+  if (!raw.isPublic) {
+    const imageUrl = `/api/media/${id}`;
+    const publishedReference = await db.prepare(`SELECT id FROM content_entries
+      WHERE status = 'published' AND (
+        CASE WHEN json_valid(metadata_json) THEN json_extract(metadata_json, '$.mediaId') END = ?
+        OR CASE WHEN json_valid(metadata_json) THEN json_extract(metadata_json, '$.image') END = ?
+      ) LIMIT 1`).bind(id, imageUrl).first<{ id: string }>();
+    if (publishedReference) {
+      return Response.json({ error: "Media used by published content must remain public" }, { status: 409 });
+    }
+  }
   await db.prepare("UPDATE media_assets SET alt_nl = ?, alt_en = ?, is_public = ? WHERE id = ?")
-    .bind(String(raw?.altNl ?? "").slice(0, 300), String(raw?.altEn ?? "").slice(0, 300), raw?.isPublic ? 1 : 0, id).run();
+    .bind(String(raw.altNl ?? "").trim().slice(0, 300), String(raw.altEn ?? "").trim().slice(0, 300), raw.isPublic ? 1 : 0, id).run();
   return Response.json({ ok: true });
 }
 
@@ -52,10 +66,29 @@ export async function DELETE(request: Request) {
   if (!id || raw?.confirmation !== "DELETE") return Response.json({ error: "Type DELETE to confirm" }, { status: 400 });
   const db = await ensureDatabase();
   const media = await db.prepare("SELECT key FROM media_assets WHERE id = ?").bind(id).first<{ key: string }>();
-  if (media) await getUploads().delete(media.key);
-  await db.batch([
-    db.prepare("DELETE FROM lead_media WHERE media_id = ?").bind(id),
-    db.prepare("DELETE FROM media_assets WHERE id = ?").bind(id),
+  if (!media) return Response.json({ error: "Media asset not found" }, { status: 404 });
+
+  const imageUrl = `/api/media/${id}`;
+  const [contentReferences, leadReferences] = await Promise.all([
+    db.prepare(`SELECT id, content_type AS contentType, slug, title_en AS title
+      FROM content_entries
+      WHERE CASE WHEN json_valid(metadata_json) THEN json_extract(metadata_json, '$.mediaId') END = ?
+         OR CASE WHEN json_valid(metadata_json) THEN json_extract(metadata_json, '$.image') END = ?`)
+      .bind(id, imageUrl).all<{ id: string; contentType: string; slug: string; title: string }>(),
+    db.prepare("SELECT COUNT(*) AS total FROM lead_media WHERE media_id = ?").bind(id).first<{ total: number }>(),
   ]);
+  const leadCount = Number(leadReferences?.total ?? 0);
+  if (contentReferences.results.length || leadCount) {
+    return Response.json({
+      error: "This media asset is still in use. Remove it from the referenced content or lead before deleting it.",
+      references: [
+        ...contentReferences.results.map((reference) => ({ kind: "content", ...reference })),
+        ...(leadCount ? [{ kind: "lead", count: leadCount }] : []),
+      ],
+    }, { status: 409 });
+  }
+
+  await getUploads().delete(media.key);
+  await db.prepare("DELETE FROM media_assets WHERE id = ?").bind(id).run();
   return Response.json({ ok: true });
 }

@@ -31,6 +31,7 @@ pnpm run build
 pnpm run test
 pnpm run lint
 pnpm run db:generate
+pnpm run media:hero
 ```
 
 ## Private superadmin setup
@@ -65,4 +66,4 @@ The legal pages intentionally remain draft-style copy and visibly require busine
 
 ## Production hand-off
 
-No production publish is part of this delivery. Before a future Sites release: review all legal/claim drafts, configure a strong production superadmin password and an independent session secret, provide Resend credentials, verify the Resend domain, provision production D1/R2 resources, migrate approved local content/media, run the full test matrix, and only then connect a domain in a separately approved change.
+The current Sites release is published independently from `formicabouw.com`; no custom-domain DNS is changed by this repository. Before accepting real submissions, review all legal/claim drafts, replace the temporary production superadmin password with a strong private value, and configure Resend after its sending domain is verified.

@@ -14,7 +14,12 @@ export interface ContentMetadata {
   mediaId?: string;
   category?: string;
   featured?: boolean;
+  verified?: boolean;
   href?: string;
+  seoTitleNl?: string;
+  seoTitleEn?: string;
+  seoDescriptionNl?: string;
+  seoDescriptionEn?: string;
   phone?: string;
   phoneDisplay?: string;
   whatsapp?: string;
@@ -79,4 +84,19 @@ export interface Lead {
   eligibleForDeletion?: boolean;
   notes?: LeadNote[];
   media?: MediaAsset[];
+}
+
+export type LeadSummary = Omit<Lead, "projectDescription" | "consentAt" | "notes" | "media">;
+
+export interface AdminOverview {
+  stats: {
+    published: number;
+    drafts: number;
+    newLeads: number;
+    failedNotifications: number;
+    media: number;
+    missingAltText: number;
+    draftClaims: number;
+  };
+  recentLeads: LeadSummary[];
 }

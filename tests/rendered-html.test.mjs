@@ -31,7 +31,8 @@ test("wires canonical, hreflang, social image, sitemap and structured data", asy
   assert.match(sitemap, /nlPaths/);
   assert.match(sitemap, /enPaths/);
   assert.match(layout, /HomeAndConstructionBusiness/);
-  assert.match(layout, /\+31617480856/);
+  assert.match(layout, /data\.settings\.phone/);
+  assert.match(layout, /data\.settings\.email/);
   assert.doesNotMatch(layout, /31851091145|085 109 11 45/);
   assert.equal(og.readUInt32BE(16), 1200);
   assert.equal(og.readUInt32BE(20), 630);
@@ -48,11 +49,13 @@ test("redirects both legacy booking URLs to the quote page", async () => {
 });
 
 test("enforces protected superadmin APIs and lead safety controls", async () => {
-  const [contentApi, mediaApi, leadApi, publicLeadApi, auth, sessionApi] = await Promise.all([
+  const [contentApi, mediaApi, leadApi, publicLeadApi, auth, sessionApi, overviewApi, contentPolicy] = await Promise.all([
     readFile(file("app/api/admin/content/route.ts"), "utf8"), readFile(file("app/api/admin/media/route.ts"), "utf8"),
     readFile(file("app/api/admin/leads/route.ts"), "utf8"), readFile(file("app/api/leads/route.ts"), "utf8"),
     readFile(file("lib/admin-auth.ts"), "utf8"),
     readFile(file("app/api/admin/session/route.ts"), "utf8"),
+    readFile(file("app/api/admin/overview/route.ts"), "utf8"),
+    readFile(file("lib/admin-content.ts"), "utf8"),
   ]);
   assert.match(contentApi, /authorizeAdmin/);
   assert.match(mediaApi, /authorizeAdmin/);
@@ -70,6 +73,33 @@ test("enforces protected superadmin APIs and lead safety controls", async () => 
   assert.match(publicLeadApi, /Too many requests/);
   assert.match(publicLeadApi, /sendLeadNotification/);
   assert.match(leadApi, /365 \* 24 \* 60 \* 60 \* 1000/);
+  assert.match(overviewApi, /authorizeAdmin/);
+  assert.match(overviewApi, /failed_notifications/);
+  assert.match(overviewApi, /missing_alt_text/);
+  assert.match(contentApi, /searchParams\.get\("type"\)/);
+  assert.match(contentApi, /creatableContentTypes/);
+  assert.match(contentApi, /fixedSlugContentTypes/);
+  assert.match(contentPolicy, /\["project", "partner"\]/);
+  assert.match(contentPolicy, /normalizeContentMetadata/);
+  assert.match(mediaApi, /json_extract\(metadata_json, '\$\.mediaId'\)/);
+  assert.match(mediaApi, /status: 409/);
+  assert.match(leadApi, /searchParams\.get\("mode"\)/);
+  assert.match(leadApi, /searchParams\.get\("id"\)/);
+});
+
+test("validates typed CMS metadata without accepting arbitrary fields", async () => {
+  const { normalizeContentMetadata } = await import(file("lib/admin-content.ts"));
+  assert.deepEqual(
+    normalizeContentMetadata({ category: "Bathroom-Renovation", featured: true }, "project"),
+    { category: "bathroom-renovation", featured: true },
+  );
+  assert.deepEqual(
+    normalizeContentMetadata({ email: " INFO@FORMICABOUW.COM ", instagram: "https://instagram.com/formicabouw" }, "settings"),
+    { email: "info@formicabouw.com", instagram: "https://instagram.com/formicabouw" },
+  );
+  assert.throws(() => normalizeContentMetadata({ featured: "yes" }, "project"), /true or false/);
+  assert.throws(() => normalizeContentMetadata({ arbitrary: "value" }, "page"), /not valid/);
+  assert.throws(() => normalizeContentMetadata({ image: "https://example.com/hotlink.jpg" }, "project"), /local website image/);
 });
 
 test("keeps the mobile navigation viewport-bound and keyboard dismissible", async () => {

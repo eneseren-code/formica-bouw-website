@@ -217,10 +217,10 @@ export const seedContent: ContentEntry[] = [
     sortOrder: index + 1,
   })),
   ...[
-    ["partner-winkel2", "Winkel2", "/media/partners/winkel2.jpg"],
+    ["partner-winkel2", "Sanitair Winkel.", "/media/partners/winkel2.jpg"],
     ["partner-sani4all", "Sani4All", "/media/partners/sani4all.png"],
-    ["partner-03", "Partner", "/media/partners/partner-03.png"],
-    ["partner-04", "Partner", "/media/partners/partner-04.png"],
+    ["partner-03", "Jan Bochman Architecten", "/media/partners/partner-03.png"],
+    ["partner-04", "Label UP", "/media/partners/partner-04.png"],
   ].map(([id, name, image], index): ContentEntry => ({
     id,
     contentType: "partner",

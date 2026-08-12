@@ -1,79 +1,99 @@
 import { ensureDatabase, getUploads } from "@/db/bootstrap";
 import { authorizeAdmin, safeJson, unauthorized } from "@/lib/admin-api";
+import { toLead, toLeadSummary, type LeadRow } from "@/lib/admin-leads";
 import { sendLeadNotification } from "@/lib/resend";
 
-type LeadRow = {
-  id: string; name: string; email: string; phone: string; postcode: string; service: string;
-  project_description: string; preferred_contact: string; status: string; notification_status: string;
-  consent_at: string; idempotency_key: string; created_at: string; updated_at: string; closed_at: string | null;
-};
+function escapeLike(value: string) {
+  return value.replace(/[\\%_]/g, "\\$&");
+}
 
-function toLead(row: LeadRow) {
-  const deletionDate = row.closed_at ? new Date(row.closed_at) : null;
-  return {
-    id: row.id, name: row.name, email: row.email, phone: row.phone, postcode: row.postcode,
-    service: row.service, projectDescription: row.project_description, preferredContact: row.preferred_contact,
-    status: row.status, notificationStatus: row.notification_status, consentAt: row.consent_at,
-    createdAt: row.created_at, updatedAt: row.updated_at, closedAt: row.closed_at,
-    eligibleForDeletion: row.status === "closed" && Boolean(deletionDate && deletionDate.getTime() <= Date.now() - 365 * 24 * 60 * 60 * 1000),
-  };
+async function withDetails(db: D1Database, row: LeadRow) {
+  const [notes, media] = await Promise.all([
+    db.prepare("SELECT id, lead_id AS leadId, note, created_at AS createdAt FROM lead_notes WHERE lead_id = ? ORDER BY created_at DESC")
+      .bind(row.id).all(),
+    db.prepare(`SELECT m.id, m.key, m.file_name AS fileName, m.content_type AS contentType, m.size,
+      m.is_public AS isPublic, m.alt_nl AS altNl, m.alt_en AS altEn, m.created_at AS createdAt
+      FROM media_assets m INNER JOIN lead_media lm ON lm.media_id = m.id WHERE lm.lead_id = ?`)
+      .bind(row.id).all(),
+  ]);
+  return { ...toLead(row), notes: notes.results, media: media.results };
 }
 
 export async function GET(request: Request) {
   if (!(await authorizeAdmin(request))) return unauthorized();
   const url = new URL(request.url);
   const status = url.searchParams.get("status") ?? "all";
-  const search = (url.searchParams.get("search") ?? "").slice(0, 120);
+  const search = (url.searchParams.get("search") ?? "").trim().slice(0, 120);
+  const id = (url.searchParams.get("id") ?? "").trim().slice(0, 80);
+  const mode = url.searchParams.get("mode") === "list" ? "list" : "full";
+  const limit = Math.floor(Math.max(1, Math.min(250, Number(url.searchParams.get("limit")) || 250)));
+  const offset = Math.floor(Math.max(0, Math.min(10000, Number(url.searchParams.get("offset")) || 0)));
+  if (status !== "all" && !["new", "contacted", "closed"].includes(status)) {
+    return Response.json({ error: "Invalid lead status" }, { status: 400 });
+  }
+  const db = await ensureDatabase();
+  if (id) {
+    const row = await db.prepare("SELECT * FROM leads WHERE id = ?").bind(id).first<LeadRow>();
+    if (!row) return Response.json({ error: "Lead not found" }, { status: 404 });
+    return Response.json({ lead: await withDetails(db, row) });
+  }
+
   const conditions: string[] = [];
-  const bindings: string[] = [];
+  const bindings: Array<string | number> = [];
   if (["new", "contacted", "closed"].includes(status)) { conditions.push("status = ?"); bindings.push(status); }
   if (search) {
-    conditions.push("(name LIKE ? OR email LIKE ? OR phone LIKE ? OR postcode LIKE ? OR service LIKE ?)");
-    for (let index = 0; index < 5; index += 1) bindings.push(`%${search}%`);
+    conditions.push("(name LIKE ? ESCAPE '\\' OR email LIKE ? ESCAPE '\\' OR phone LIKE ? ESCAPE '\\' OR postcode LIKE ? ESCAPE '\\' OR service LIKE ? ESCAPE '\\')");
+    for (let index = 0; index < 5; index += 1) bindings.push(`%${escapeLike(search)}%`);
   }
   const where = conditions.length ? ` WHERE ${conditions.join(" AND ")}` : "";
-  const db = await ensureDatabase();
-  const result = await db.prepare(`SELECT * FROM leads${where} ORDER BY created_at DESC LIMIT 250`).bind(...bindings).all<LeadRow>();
-  const leads = [];
-  for (const row of result.results) {
-    const notes = await db.prepare("SELECT id, lead_id AS leadId, note, created_at AS createdAt FROM lead_notes WHERE lead_id = ? ORDER BY created_at DESC").bind(row.id).all();
-    const media = await db.prepare(`SELECT m.id, m.key, m.file_name AS fileName, m.content_type AS contentType, m.size,
-      m.is_public AS isPublic, m.alt_nl AS altNl, m.alt_en AS altEn, m.created_at AS createdAt
-      FROM media_assets m INNER JOIN lead_media lm ON lm.media_id = m.id WHERE lm.lead_id = ?`).bind(row.id).all();
-    leads.push({ ...toLead(row), notes: notes.results, media: media.results });
+  const [result, countRow] = await Promise.all([
+    db.prepare(`SELECT * FROM leads${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`)
+      .bind(...bindings, limit, offset).all<LeadRow>(),
+    db.prepare(`SELECT COUNT(*) AS total FROM leads${where}`).bind(...bindings).first<{ total: number }>(),
+  ]);
+  if (mode === "list") {
+    return Response.json({ leads: result.results.map(toLeadSummary), total: Number(countRow?.total ?? 0) });
   }
-  return Response.json({ leads });
+  const leads = await Promise.all(result.results.map((row) => withDetails(db, row)));
+  return Response.json({ leads, total: Number(countRow?.total ?? 0) });
 }
 
 export async function PATCH(request: Request) {
   if (!(await authorizeAdmin(request, true))) return unauthorized();
   const raw = safeJson(await request.json());
-  const id = typeof raw?.id === "string" ? raw.id : "";
-  const action = typeof raw?.action === "string" ? raw.action : "";
+  const id = typeof raw?.id === "string" ? raw.id.trim().slice(0, 80) : "";
+  const action = typeof raw?.action === "string" ? raw.action.trim() : "";
   if (!id) return Response.json({ error: "Lead id is required" }, { status: 400 });
   const db = await ensureDatabase();
+  const lead = await db.prepare("SELECT * FROM leads WHERE id = ?").bind(id).first<LeadRow>();
+  if (!lead) return Response.json({ error: "Lead not found" }, { status: 404 });
 
   if (action === "status") {
     const status = typeof raw?.status === "string" ? raw.status : "";
     if (!["new", "contacted", "closed"].includes(status)) return Response.json({ error: "Invalid status" }, { status: 400 });
     const now = new Date().toISOString();
     await db.prepare("UPDATE leads SET status = ?, closed_at = ?, updated_at = ? WHERE id = ?")
-      .bind(status, status === "closed" ? now : null, now, id).run();
+      .bind(status, status === "closed" ? lead.closed_at ?? now : null, now, id).run();
   } else if (action === "note") {
     const note = typeof raw?.note === "string" ? raw.note.trim().slice(0, 4000) : "";
     if (!note) return Response.json({ error: "A note is required" }, { status: 400 });
-    await db.prepare("INSERT INTO lead_notes (id, lead_id, note, created_at) VALUES (?, ?, ?, ?)")
-      .bind(crypto.randomUUID(), id, note, new Date().toISOString()).run();
+    const now = new Date().toISOString();
+    await db.batch([
+      db.prepare("INSERT INTO lead_notes (id, lead_id, note, created_at) VALUES (?, ?, ?, ?)")
+        .bind(crypto.randomUUID(), id, note, now),
+      db.prepare("UPDATE leads SET updated_at = ? WHERE id = ?").bind(now, id),
+    ]);
   } else if (action === "resend") {
-    const row = await db.prepare("SELECT * FROM leads WHERE id = ?").bind(id).first<LeadRow>();
-    if (!row) return Response.json({ error: "Lead not found" }, { status: 404 });
-    if (row.notification_status === "sent") return Response.json({ error: "The notification was already sent" }, { status: 409 });
+    if (lead.notification_status === "sent") return Response.json({ error: "The notification was already sent" }, { status: 409 });
     try {
       const result = await sendLeadNotification({
-        id: row.id, name: row.name, email: row.email, phone: row.phone, postcode: row.postcode,
-        service: row.service, projectDescription: row.project_description, preferredContact: row.preferred_contact,
-      }, row.idempotency_key);
+        id: lead.id, name: lead.name, email: lead.email, phone: lead.phone, postcode: lead.postcode,
+        service: lead.service, projectDescription: lead.project_description, preferredContact: lead.preferred_contact,
+      }, lead.idempotency_key);
       await db.prepare("UPDATE leads SET notification_status = ?, updated_at = ? WHERE id = ?").bind(result.status, new Date().toISOString(), id).run();
+      if (result.status !== "sent") {
+        return Response.json({ error: "Email is not configured yet; the lead remains saved and needs attention" }, { status: 503 });
+      }
     } catch {
       await db.prepare("UPDATE leads SET notification_status = 'failed', updated_at = ? WHERE id = ?").bind(new Date().toISOString(), id).run();
       return Response.json({ error: "Email notification failed again; the lead remains saved" }, { status: 502 });

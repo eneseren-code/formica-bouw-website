@@ -1,6 +1,7 @@
 import { ensureDatabase, getUploads } from "@/db/bootstrap";
 import { hashIp, validateImage } from "@/lib/file-validation";
 import { sendLeadNotification } from "@/lib/resend";
+import { defaultSettings } from "@/lib/site-data";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -13,9 +14,20 @@ function clientIp(request: Request) {
   return request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
 }
 
-function whatsappUrl(name: string, service: string, postcode: string, id: string) {
+async function configuredWhatsApp(db: D1Database) {
+  const settings = await db.prepare("SELECT metadata_json FROM content_entries WHERE id = 'settings-global' AND content_type = 'settings' LIMIT 1")
+    .first<{ metadata_json: string }>();
+  try {
+    const metadata = JSON.parse(settings?.metadata_json || "{}") as { whatsapp?: unknown; phone?: unknown };
+    return String(metadata.whatsapp || metadata.phone || defaultSettings.whatsapp || defaultSettings.phone).replace(/\D/g, "");
+  } catch {
+    return String(defaultSettings.whatsapp || defaultSettings.phone).replace(/\D/g, "");
+  }
+}
+
+function whatsappUrl(number: string, name: string, service: string, postcode: string, id: string) {
   const text = `Hallo Formica Bouw, ik heb zojuist een offerteaanvraag verstuurd.\nNaam: ${name}\nDienst: ${service}\nPostcode: ${postcode || "—"}\nReferentie: ${id}`;
-  return `https://wa.me/31617480856?text=${encodeURIComponent(text)}`;
+  return `https://wa.me/${number}?text=${encodeURIComponent(text)}`;
 }
 
 export async function POST(request: Request) {
@@ -55,6 +67,7 @@ export async function POST(request: Request) {
     const extensions = await Promise.all(photos.map((file) => validateImage(file)));
 
     const db = await ensureDatabase();
+    const whatsappNumber = await configuredWhatsApp(db);
     const ipHash = await hashIp(clientIp(request));
     const recent = await db.prepare("SELECT COUNT(*) AS count FROM leads WHERE ip_hash = ? AND created_at >= datetime('now', '-15 minutes')").bind(ipHash).first<{ count: number }>();
     if (Number(recent?.count ?? 0) >= 5) return Response.json({ error: "Too many requests. Please try again later." }, { status: 429 });
@@ -62,7 +75,7 @@ export async function POST(request: Request) {
     const idempotencyKey = (request.headers.get("idempotency-key") || crypto.randomUUID()).slice(0, 120);
     const existing = await db.prepare("SELECT id FROM leads WHERE idempotency_key = ?").bind(idempotencyKey).first<{ id: string }>();
     if (existing?.id) {
-      return Response.json({ ok: true, id: existing.id, whatsappUrl: whatsappUrl(lead.name, lead.service, lead.postcode, existing.id) });
+      return Response.json({ ok: true, id: existing.id, whatsappUrl: whatsappUrl(whatsappNumber, lead.name, lead.service, lead.postcode, existing.id) });
     }
 
     leadId = crypto.randomUUID();
@@ -97,7 +110,7 @@ export async function POST(request: Request) {
     }
     await db.prepare("UPDATE leads SET notification_status = ?, updated_at = ? WHERE id = ?").bind(notificationStatus, new Date().toISOString(), leadId).run();
 
-    return Response.json({ ok: true, id: leadId, notificationStatus, whatsappUrl: whatsappUrl(lead.name, lead.service, lead.postcode, leadId) }, { status: 201 });
+    return Response.json({ ok: true, id: leadId, notificationStatus, whatsappUrl: whatsappUrl(whatsappNumber, lead.name, lead.service, lead.postcode, leadId) }, { status: 201 });
   } catch (error) {
     return Response.json({
       error: leadInserted ? "Your request was saved, but an attachment could not be processed. Please contact us with your reference." : (error instanceof Error ? error.message : "Unable to submit your request"),

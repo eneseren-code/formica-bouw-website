@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { loadPublicContent } from "@/lib/content-store";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -12,16 +13,17 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#17372d" };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const data = await loadPublicContent();
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "HomeAndConstructionBusiness",
     name: "Formica Bouw",
     url: siteUrl,
-    email: "info@formicabouw.com",
-    telephone: "+31617480856",
-    areaServed: { "@type": "Country", name: "Netherlands" },
-    sameAs: ["https://www.instagram.com/formicabouw/"],
+    email: data.settings.email,
+    telephone: data.settings.phone,
+    areaServed: { "@type": "Country", name: data.settings.serviceAreaEn || "Netherlands" },
+    sameAs: data.settings.instagram ? [data.settings.instagram] : [],
   };
   return (
     <html lang="nl" suppressHydrationWarning>

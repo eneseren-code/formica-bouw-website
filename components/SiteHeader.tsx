@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Locale } from "@/lib/types";
 import { enPaths, nlPaths, pathFor } from "@/lib/site-data";
 
@@ -13,19 +13,45 @@ const labels = {
 
 export function SiteHeader({ locale, pageKey }: { locale: Locale; pageKey: string }) {
   const [open, setOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const navigation = useRef<HTMLElement>(null);
   const text = labels[locale];
   const alternateLocale: Locale = locale === "nl" ? "en" : "nl";
   const alternatePath = (alternateLocale === "nl" ? nlPaths : enPaths)[pageKey] ?? pathFor("home", alternateLocale);
 
   useEffect(() => {
-    document.documentElement.style.overflow = open ? "hidden" : "";
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+    if (!open) return;
+    const previousOverflow = document.documentElement.style.overflow;
+    const trigger = menuButton.current;
+    const firstLink = navigation.current?.querySelector<HTMLElement>("a[href]");
+    document.documentElement.style.overflow = "hidden";
+    firstLink?.focus();
+
+    const containFocus = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = [menuButton.current, ...Array.from(navigation.current?.querySelectorAll<HTMLElement>("a[href], button:not([disabled])") ?? [])]
+        .filter((item): item is HTMLElement => Boolean(item));
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-    window.addEventListener("keydown", closeOnEscape);
+    window.addEventListener("keydown", containFocus);
     return () => {
-      document.documentElement.style.overflow = "";
-      window.removeEventListener("keydown", closeOnEscape);
+      document.documentElement.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", containFocus);
+      trigger?.focus();
     };
   }, [open]);
 
@@ -36,6 +62,7 @@ export function SiteHeader({ locale, pageKey }: { locale: Locale; pageKey: strin
         <span><strong>Formica</strong> Bouw</span>
       </a>
       <button
+        ref={menuButton}
         className="menu-button"
         type="button"
         aria-label={open ? text.close : text.menu}
@@ -46,7 +73,7 @@ export function SiteHeader({ locale, pageKey }: { locale: Locale; pageKey: strin
         <span />
         <span />
       </button>
-      <nav id="main-navigation" className={open ? "main-nav is-open" : "main-nav"} aria-label="Main navigation">
+      <nav ref={navigation} id="main-navigation" className={open ? "main-nav is-open" : "main-nav"} aria-label="Main navigation">
         <div className="nav-links">
           {navKeys.map((key) => (
             <a key={key} href={pathFor(key, locale)} onClick={() => setOpen(false)}>

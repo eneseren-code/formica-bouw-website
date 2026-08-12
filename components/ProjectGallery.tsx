@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ContentEntry, Locale } from "@/lib/types";
 import { getLocalized } from "@/lib/site-data";
 
@@ -17,15 +17,43 @@ function imageFor(project: ContentEntry) {
 export function ProjectGallery({ projects, locale, compact = false }: { projects: ContentEntry[]; locale: Locale; compact?: boolean }) {
   const [filter, setFilter] = useState("all");
   const [active, setActive] = useState<ContentEntry | null>(null);
+  const lightbox = useRef<HTMLDivElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
   const labels = filterLabels[locale];
   const filtered = projects.filter((project) => filter === "all" || project.metadata.category === filter);
   const shown = compact ? filtered.slice(0, 4) : filtered;
 
   useEffect(() => {
     if (!active) return;
-    const close = (event: KeyboardEvent) => event.key === "Escape" && setActive(null);
-    window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    closeButton.current?.focus();
+    const containFocus = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setActive(null);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(lightbox.current?.querySelectorAll<HTMLElement>("button:not([disabled]), a[href]") ?? []);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", containFocus);
+    return () => {
+      document.documentElement.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", containFocus);
+      previousFocus?.focus();
+    };
   }, [active]);
 
   return (
@@ -51,8 +79,8 @@ export function ProjectGallery({ projects, locale, compact = false }: { projects
         })}
       </div>
       {active && (
-        <div className="lightbox" role="dialog" aria-modal="true" aria-label={getLocalized(active, locale).title}>
-          <button type="button" className="lightbox-close" onClick={() => setActive(null)} aria-label={locale === "nl" ? "Sluiten" : "Close"}>×</button>
+        <div ref={lightbox} className="lightbox" role="dialog" aria-modal="true" aria-label={getLocalized(active, locale).title}>
+          <button ref={closeButton} type="button" className="lightbox-close" onClick={() => setActive(null)} aria-label={locale === "nl" ? "Sluiten" : "Close"}>×</button>
           <img src={imageFor(active)} alt={getLocalized(active, locale).title} />
           <p>{getLocalized(active, locale).title}</p>
         </div>
