@@ -1,0 +1,25 @@
+services:
+  web:
+    build:
+      context: .
+    env_file:
+      - .env.local
+    environment:
+      WRANGLER_LOG_PATH: .wrangler/wrangler.log
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - formica_node_modules:/app/node_modules
+      - formica_wrangler:/app/.wrangler
+    command: ["pnpm", "exec", "vinext", "dev", "--hostname", "0.0.0.0"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('net').connect(3000,'127.0.0.1').once('connect',function(){this.end()}).once('error',()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  formica_node_modules:
+  formica_wrangler:

@@ -139,6 +139,10 @@ function HomePage({ locale, data }: { locale: Locale; data: PublicData }) {
         </div>
         <div className="home-hero-shade" aria-hidden="true" />
         <div className="home-hero-grid" aria-hidden="true" />
+        <div className="home-waterline" aria-hidden="true">
+          <span>water / flow</span>
+          <i /><i /><i />
+        </div>
         <div className="home-hero-copy">
           <p className="eyebrow home-hero-kicker">{isNl ? "Complete badkamerrenovatie · heel Nederland" : "Complete bathroom renovation · across the Netherlands"}</p>
           <h1 aria-label={copy.title}>

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   icons: { icon: "/media/brand/logo.png", apple: "/media/brand/logo.png" },
 };
 
-export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#17372d" };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#063f3b" };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const data = await loadPublicContent();

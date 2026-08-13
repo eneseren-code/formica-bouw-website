@@ -24,6 +24,20 @@ pnpm run dev
 
 Open `http://localhost:3000`. Local D1 and R2 are emulated by Wrangler according to `.openai/hosting.json`; local data remains on the development machine.
 
+### Docker Desktop
+
+Keep private credentials in `.env.local`, then run the complete local stack in Docker:
+
+```bash
+docker compose up --build
+```
+
+Open `http://localhost:3000`. Source files are mounted into the container for local development, while dependencies and Wrangler state use named Docker volumes. Stop the stack with `docker compose down`; this keeps the local volumes intact.
+
+## Static GitHub Pages preview
+
+The workflow in `.github/workflows/deploy-pages.yml` exports all Dutch and English public routes to GitHub Pages. It keeps local media, responsive video, navigation and lightweight interactions. Server-only features (`/admin`, D1/R2, lead APIs and form delivery) are intentionally unavailable in this static preview; visitors are directed to the existing WhatsApp, phone and email links instead.
+
 Useful commands:
 
 ```bash

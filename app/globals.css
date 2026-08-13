@@ -1,16 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --ink: #1d211f;
-  --forest: #17372d;
-  --forest-soft: #2f5548;
-  --stone: #f2eee6;
-  --sand: #d8cbb9;
-  --paper: #fbfaf7;
-  --line: rgba(29, 33, 31, 0.16);
-  --muted: #626963;
-  --serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  --ink: #10181c;
+  --forest: #063f3b;
+  --forest-soft: #175e58;
+  --stone: #e8ece8;
+  --sand: #c3cbc7;
+  --paper: #f4f6f2;
+  --line: rgba(16, 24, 28, 0.18);
+  --muted: #5c676b;
+  --serif: "Helvetica Neue", "Arial Narrow", Arial, sans-serif;
   --sans: "Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif;
+  --display: "Helvetica Neue", "Arial Narrow", Arial, sans-serif;
+  --utility: SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  --cobalt: #2f5bff;
 }
 
 * { box-sizing: border-box; }
@@ -20,7 +23,7 @@ a { color: inherit; text-decoration: none; }
 img { display: block; max-width: 100%; }
 button, input, textarea, select { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
-:focus-visible { outline: 3px solid #d59d5f; outline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--cobalt); outline-offset: 3px; }
 ::selection { background: var(--forest); color: white; }
 
 .eyebrow { margin: 0 0 1.1rem; font-size: .7rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
@@ -779,4 +782,154 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .home-hero-video { display: none; }
   .home-scroll-sketch { will-change: auto; }
   [data-parallax] { translate: 0 !important; }
+}
+
+/* Wet-room material system: a restrained, technical identity for Formica Bouw. */
+body { background: var(--paper); }
+::selection { background: var(--cobalt); color: #fff; }
+.eyebrow,
+.footer-label,
+.home-hero-proof dt,
+.home-service-number,
+.home-service-index-heading,
+.project-caption small { font-family: var(--utility); letter-spacing: .11em; }
+.button { min-height: 50px; border-radius: 3px; text-transform: uppercase; }
+.button-dark,
+.button-accent,
+.header-quote { background: var(--cobalt); color: #fff; }
+.button-dark:hover,
+.button-accent:hover,
+.header-quote:hover { background: #2148df; }
+.button-light { border-color: var(--line); background: var(--paper); }
+.arrow-link span { border-radius: 3px; }
+
+.site-header { border-bottom-color: rgba(16,24,28,.14); background: rgba(244,246,242,.94); }
+.brand { letter-spacing: -.01em; }
+.brand strong { font-weight: 780; }
+.nav-links a::after { height: 2px; background: var(--cobalt); }
+.language-link { font-family: var(--utility); }
+
+.home-redesign { --home-accent: var(--cobalt); --home-cream: #e8ece8; background: var(--paper); }
+.home-cinematic-hero { background: var(--forest); }
+.home-hero-shade {
+  background: linear-gradient(90deg, rgba(5,24,24,.91) 0%, rgba(5,24,24,.67) 49%, rgba(5,24,24,.14) 100%), linear-gradient(0deg, rgba(5,24,24,.7), transparent 48%);
+}
+.home-hero-grid {
+  opacity: .34;
+  background-image: linear-gradient(90deg, transparent calc(25% - .5px), rgba(121,151,255,.32) 25%, transparent calc(25% + .5px)), linear-gradient(0deg, transparent calc(50% - .5px), rgba(255,255,255,.18) 50%, transparent calc(50% + .5px));
+}
+.home-hero-copy { max-width: 990px; }
+.home-hero-copy h1 { max-width: 960px; font-family: var(--display); font-size: clamp(4rem, 8.4vw, 8.9rem); font-weight: 680; line-height: .86; letter-spacing: -.075em; }
+.home-hero-kicker { color: #b9c6ff; }
+.home-hero-summary { max-width: 610px; color: rgba(255,255,255,.78); }
+.home-text-link { border-bottom: 2px solid var(--cobalt); }
+.home-hero-proof { border-color: rgba(185,198,255,.42); background: rgba(5,24,24,.7); backdrop-filter: blur(14px); }
+.home-hero-proof dd { font-family: var(--sans); font-weight: 650; }
+.home-waterline {
+  position: absolute; z-index: 2; top: 0; right: clamp(2rem, 8vw, 8rem); bottom: -42px; width: 2px; background: var(--cobalt); pointer-events: none;
+  transform: scaleY(0); transform-origin: top; animation: home-waterline-draw 1.15s .25s cubic-bezier(.2,.7,.2,1) forwards;
+}
+.home-waterline span {
+  position: absolute; top: 32%; right: 12px; width: max-content; color: #b9c6ff; font-family: var(--utility); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase;
+  rotate: -90deg; transform-origin: right center;
+}
+.home-waterline i { position: absolute; left: 50%; width: 9px; height: 9px; border: 2px solid #b9c6ff; border-radius: 50%; background: var(--forest); translate: -50% -50%; }
+.home-waterline i:nth-of-type(1) { top: 16%; }
+.home-waterline i:nth-of-type(2) { top: 58%; }
+.home-waterline i:nth-of-type(3) { top: 88%; }
+@keyframes home-waterline-draw { to { transform: scaleY(1); } }
+
+.home-partners-heading h2,
+.home-expertise-copy h2,
+.home-section-heading h2,
+.home-approach-statement h2,
+.home-conversion-copy h2,
+.section-heading h2,
+.service-detail h2,
+.form-aside h2,
+.footer-intro h2,
+.page-hero h1,
+.contact-hero-copy h1 { font-family: var(--display); font-weight: 670; line-height: .91; letter-spacing: -.06em; }
+.home-partners { background: #fff; }
+.home-partner-grid { border-color: var(--line); background: var(--line); }
+.home-partner-card { background: #fff; }
+.home-partner-card::after { height: 3px; background: var(--cobalt); }
+.home-partner-card:hover,
+.home-partner-card:focus-visible { background: #eef1ff; }
+.home-partner-index { display: none; }
+.home-partner-card strong { font-family: var(--utility); font-weight: 650; text-transform: uppercase; }
+
+.home-expertise { background: var(--paper); }
+.home-scroll-sketch { mix-blend-mode: multiply; opacity: .08; }
+.home-expertise-image { box-shadow: 16px 16px 0 #d7ddda; }
+.home-expertise-image figcaption { border-left: 3px solid var(--cobalt); background: rgba(244,246,242,.94); font-family: var(--sans); font-weight: 650; }
+.home-expertise-image figcaption span,
+.home-expertise-copy li::before { color: var(--cobalt); }
+.home-service-index > a.is-primary { border-top-color: var(--cobalt); }
+.home-service-index > a::before { background: var(--forest); }
+.home-service-index strong { font-family: var(--display); font-weight: 650; letter-spacing: -.035em; }
+
+.home-projects { background: #e8ece8; }
+.home-projects .project-card:focus-visible { outline-color: var(--cobalt); }
+.home-projects .project-caption { border-left: 3px solid var(--cobalt); background: rgba(244,246,242,.94); }
+.project-caption strong { font-family: var(--sans); font-weight: 700; }
+
+.home-approach { background: var(--forest); }
+.home-approach::before { border-radius: 0; border-color: rgba(185,198,255,.12); rotate: 45deg; }
+.home-approach-mark { border: 1px solid rgba(185,198,255,.5); border-radius: 3px; background: var(--cobalt); font-family: var(--utility); rotate: 0deg; }
+.home-process-list > li { border-color: rgba(255,255,255,.2); }
+.home-process-list > li > span { color: #b9c6ff; font-family: var(--utility); }
+.home-process-list h3 { font-family: var(--sans); font-weight: 700; }
+
+.home-conversion { background: var(--paper); }
+.home-conversion-copy { position: relative; border-top: 6px solid var(--cobalt); }
+.home-conversion-copy::before { content: "FORMICA / CONTACT"; position: absolute; top: 1.35rem; right: 1.5rem; color: var(--muted); font-family: var(--utility); font-size: .56rem; letter-spacing: .12em; }
+.home-conversion-phone { border-bottom-color: var(--cobalt); }
+.home-conversion-phone strong { font-family: var(--sans); font-weight: 720; }
+
+.page-hero { background: var(--stone); }
+.page-hero-copy { position: relative; border-top: 5px solid var(--cobalt); }
+.page-hero-copy::after { content: "FORMICA / BOUW"; position: absolute; top: 2rem; right: 2rem; color: var(--muted); font-family: var(--utility); font-size: .58rem; letter-spacing: .12em; }
+.service-card h3,
+.process-grid h3,
+.project-caption strong,
+.contact-action strong,
+.contact-visual-note p,
+.contact-visual-call strong { font-family: var(--sans); font-weight: 700; }
+.project-filters button { border-radius: 3px; }
+.project-filters button.is-active,
+.project-filters button:hover { border-color: var(--cobalt); background: var(--cobalt); }
+
+.contact-hero { background: var(--forest); }
+.contact-hero-copy::before { border-radius: 3px; border-color: rgba(185,198,255,.25); }
+.contact-action { border-radius: 3px; }
+.contact-action-phone:hover { border-color: #b9c6ff; }
+.contact-action-icon { border-radius: 3px; }
+.contact-visual-note { border-left: 3px solid var(--cobalt); background: rgba(6,63,59,.92); }
+.contact-visual-note span { color: #b9c6ff; }
+.contact-visual-call { border-top: 4px solid var(--cobalt); background: rgba(244,246,242,.96); }
+.contact-form-section { background: var(--stone); }
+.contact-form-section .quote-form { background: #fff; box-shadow: 14px 14px 0 #cfd6d2; }
+.quote-form input:focus,
+.quote-form textarea:focus,
+.quote-form select:focus { border-color: var(--cobalt) !important; box-shadow: 0 0 0 3px rgba(47,91,255,.14); }
+
+.site-footer { border-top: 5px solid var(--cobalt); background: #081a1b; }
+.footer-intro h2 { max-width: 1040px; }
+.footer-grid,
+.footer-bottom { border-color: rgba(185,198,255,.2); }
+
+@media (max-width: 767px) {
+  .home-hero-copy h1 { font-size: clamp(3.35rem, 16vw, 5.2rem); }
+  .home-waterline { right: 1.25rem; bottom: -24px; opacity: .75; }
+  .home-waterline span { display: none; }
+  .home-partner-card strong { font-size: .55rem; }
+  .home-expertise-image { box-shadow: 8px 8px 0 #d7ddda; }
+  .home-scroll-sketch { opacity: .06; }
+  .home-conversion-copy::before { top: 1rem; right: 1.3rem; }
+  .page-hero-copy::after { top: 1.2rem; right: 1.3rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-waterline { transform: scaleY(1); animation: none; }
 }
