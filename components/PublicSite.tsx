@@ -67,11 +67,11 @@ function MobileActionBar({ locale, settings }: { locale: Locale; settings: Publi
 
 function ServiceCards({ services, locale }: { services: ContentEntry[]; locale: Locale }) {
   return (
-    <div className="service-grid">
+    <div className="service-grid" data-reveal-group>
       {services.map((service, index) => {
         const copy = getLocalized(service, locale);
         return (
-          <article className={`service-card${index === 0 ? " service-card-featured" : ""}`} key={service.id}>
+          <article className={`service-card${index === 0 ? " service-card-featured" : ""}`} key={service.id} data-motion-item>
             <a className="service-image" href={pathFor(service.slug, locale)}>
               <img src={imageFor(service)} alt={copy.title} loading={index > 2 ? "lazy" : "eager"} />
               {index === 0 && <span className="specialism-tag">{locale === "nl" ? "Ons specialisme" : "Our speciality"}</span>}
@@ -118,7 +118,6 @@ function HomePage({ locale, data }: { locale: Locale; data: PublicData }) {
 
   return (
     <div className="home-redesign">
-      <HomeMotion />
       <section className="home-hero home-cinematic-hero" data-home-hero>
         <div className="home-hero-media" aria-hidden="true">
           <picture className="home-hero-poster-frame">
@@ -167,14 +166,14 @@ function HomePage({ locale, data }: { locale: Locale; data: PublicData }) {
           <h2 id="home-partners-title">{isNl ? "Vakwerk ontstaat samen met sterke partners." : "Craftsmanship grows through strong partnerships."}</h2>
           <span>{isNl ? "Merken en professionals waarmee wij samenwerken" : "Brands and professionals we work with"}</span>
         </div>
-        <div className="home-partner-grid">
+        <div className="home-partner-grid" data-reveal-group>
           {data.partners.slice(0, 4).map((partner, index) => {
             const savedName = getLocalized(partner, locale).title.trim();
             const partnerName = savedName === partnerLegacyNames[partner.id] ? verifiedPartnerNames[partner.id] : savedName;
             const content = <><span className="home-partner-index">0{index + 1}</span><img src={imageFor(partner)} alt={partnerName} loading="eager" /><strong>{partnerName}</strong>{partner.metadata.href && <span className="home-partner-arrow" aria-hidden="true">↗</span>}</>;
             return partner.metadata.href
-              ? <a className="home-partner-card" href={String(partner.metadata.href)} target="_blank" rel="noreferrer" key={partner.id} data-reveal>{content}</a>
-              : <div className="home-partner-card" key={partner.id} data-reveal>{content}</div>;
+              ? <a className="home-partner-card" href={String(partner.metadata.href)} target="_blank" rel="noreferrer" key={partner.id} data-motion-item>{content}</a>
+              : <div className="home-partner-card" key={partner.id} data-motion-item>{content}</div>;
           })}
         </div>
       </section>
@@ -240,10 +239,9 @@ function HomePage({ locale, data }: { locale: Locale; data: PublicData }) {
           <p className="eyebrow">{isNl ? "Waarom Formica Bouw" : "Why Formica Bouw"}</p>
           <h2 id="home-approach-title">{isNl ? "Mooi op de eerste dag. Goed uitgevoerd voor iedere dag daarna." : "Beautiful on day one. Built right for every day after."}</h2>
           <p>{isNl ? "We brengen ontwerp, techniek en uitvoering samen in één overzichtelijk proces." : "We bring design, engineering and delivery together in one clear process."}</p>
-          <span className="home-approach-mark" aria-hidden="true">F / B</span>
         </div>
-        <ol className="home-process-list" data-reveal>
-          {processCopy[locale].map(([number, title, description]) => <li key={number}><span>{number}</span><div><h3>{title}</h3><p>{description}</p></div></li>)}
+        <ol className="home-process-list" data-reveal-group>
+          {processCopy[locale].map(([number, title, description]) => <li key={number} data-motion-item><span>{number}</span><div><h3>{title}</h3><p>{description}</p></div></li>)}
         </ol>
       </section>
 
@@ -275,11 +273,11 @@ function ServicePage({ locale, data, serviceKey }: { locale: Locale; data: Publi
   const copy = getLocalized(service, locale);
   const related = data.projects.filter((project) => project.metadata.category === service.metadata.category);
   const isBathroom = serviceKey === "renovations";
-  return <><PageHero eyebrow={isBathroom ? (locale === "nl" ? "Ons specialisme" : "Our speciality") : (locale === "nl" ? "Dienst" : "Service")} title={copy.title} summary={copy.summary} image={imageFor(service)} /><section className="section service-detail"><div><p className="eyebrow">{locale === "nl" ? "Onze aanpak" : "Our approach"}</p><h2>{isBathroom ? (locale === "nl" ? "Eén partij voor uw complete badkamer." : "One partner for your complete bathroom.") : (locale === "nl" ? "Zorgvuldig van plan naar uitvoering." : "Carefully moving from plan to delivery.")}</h2></div><div><p className="body-large">{copy.body}</p><a className="button button-dark" href={pathFor("quote", locale)}>{locale === "nl" ? "Bespreek uw badkamer" : "Discuss your bathroom"}</a></div></section>{related.length > 0 && <section className="section related-projects"><div className="section-heading"><div><p className="eyebrow">{locale === "nl" ? "Gerelateerd werk" : "Related work"}</p><h2>{locale === "nl" ? "Bekijk het van dichtbij." : "Take a closer look."}</h2></div></div><ProjectGallery projects={related} locale={locale} compact /></section>}</>;
+  return <><PageHero eyebrow={isBathroom ? (locale === "nl" ? "Ons specialisme" : "Our speciality") : (locale === "nl" ? "Dienst" : "Service")} title={copy.title} summary={copy.summary} image={imageFor(service)} /><section className="section service-detail" data-reveal-group><div data-motion-item><p className="eyebrow">{locale === "nl" ? "Onze aanpak" : "Our approach"}</p><h2>{isBathroom ? (locale === "nl" ? "Eén partij voor uw complete badkamer." : "One partner for your complete bathroom.") : (locale === "nl" ? "Zorgvuldig van plan naar uitvoering." : "Carefully moving from plan to delivery.")}</h2></div><div data-motion-item><p className="body-large">{copy.body}</p><a className="button button-dark" href={pathFor("quote", locale)}>{locale === "nl" ? "Bespreek uw badkamer" : "Discuss your bathroom"}</a></div></section>{related.length > 0 && <section className="section related-projects"><div className="section-heading" data-reveal><div><p className="eyebrow">{locale === "nl" ? "Gerelateerd werk" : "Related work"}</p><h2>{locale === "nl" ? "Bekijk het van dichtbij." : "Take a closer look."}</h2></div></div><ProjectGallery projects={related} locale={locale} compact /></section>}</>;
 }
 
 function PageHero({ eyebrow, title, summary, image }: { eyebrow: string; title: string; summary: string; image: string }) {
-  return <section className="page-hero"><div className="page-hero-copy"><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p>{summary}</p></div><img src={image} alt="" /></section>;
+  return <section className="page-hero" data-reveal-group><div className="page-hero-copy" data-motion-item><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p>{summary}</p></div><img src={image} alt="" data-motion-item /></section>;
 }
 
 function ContactPage({ locale, data, copy }: { locale: Locale; data: PublicData; copy: ReturnType<typeof getLocalized> }) {
@@ -287,8 +285,8 @@ function ContactPage({ locale, data, copy }: { locale: Locale; data: PublicData;
   const whatsappMessage = isNl ? "Hallo Formica Bouw, ik wil graag mijn badkamerplannen bespreken." : "Hello Formica Bouw, I would like to discuss my bathroom plans.";
   const whatsappUrl = `https://wa.me/${String(data.settings.whatsapp || data.settings.phone).replace(/\D/g, "")}?text=${encodeURIComponent(whatsappMessage)}`;
   return <>
-    <section className="contact-hero">
-      <div className="contact-hero-copy">
+    <section className="contact-hero" data-reveal-group>
+      <div className="contact-hero-copy" data-motion-item>
         <p className="eyebrow">{isNl ? "Direct contact met Formica Bouw" : "Direct contact with Formica Bouw"}</p>
         <h1>{copy.title}</h1>
         <p>{copy.summary}</p>
@@ -306,13 +304,13 @@ function ContactPage({ locale, data, copy }: { locale: Locale; data: PublicData;
         </div>
         <div className="contact-promises"><span>✓ {isNl ? "Persoonlijk contact" : "Personal contact"}</span><span>✓ {isNl ? "Foto’s zijn welkom" : "Photos are welcome"}</span><span>✓ {isNl ? "Vrijblijvend kennismaken" : "No-obligation introduction"}</span></div>
       </div>
-      <div className="contact-visual">
+      <div className="contact-visual" data-motion-item>
         <img src="/media/details/renovation-modern-bath.jpg" alt={isNl ? "Sfeervolle moderne badkamer" : "Atmospheric modern bathroom"} />
         <div className="contact-visual-note"><span aria-hidden="true">✦</span><p>{isNl ? "Een foto van uw huidige badkamer zegt vaak al veel." : "A photo of your current bathroom often tells us a lot."}</p></div>
         <a className="contact-visual-call" href={whatsappUrl} target="_blank" rel="noreferrer"><small>{isNl ? "Heeft u al een foto?" : "Already have a photo?"}</small><strong>{isNl ? "Stuur hem, dan kijken we mee" : "Send it and let’s take a look"}</strong><span>↗</span></a>
       </div>
     </section>
-    <section className="section contact-form-section"><div className="form-aside"><p className="eyebrow">{isNl ? "Uw idee is het begin" : "Your idea is the beginning"}</p><h2>{isNl ? "Laat ons even met u meekijken." : "Let us take a look with you."}</h2><p>{isNl ? "Vertel wat u mooi vindt, wat nu niet werkt en wat u graag anders ziet. Met een paar gegevens en foto’s kunnen we het gesprek gericht beginnen." : "Tell us what you like, what is not working now and what you would love to change. A few details and photos help us start a focused conversation."}</p><div className="form-aside-points"><span>01 — {isNl ? "Deel uw wensen" : "Share your wishes"}</span><span>02 — {isNl ? "Voeg foto’s toe" : "Add photos"}</span><span>03 — {isNl ? "Wij nemen contact op" : "We contact you"}</span></div></div><QuoteForm locale={locale} services={data.services} /></section>
+    <section className="section contact-form-section" data-reveal-group><div className="form-aside" data-motion-item><p className="eyebrow">{isNl ? "Uw idee is het begin" : "Your idea is the beginning"}</p><h2>{isNl ? "Laat ons even met u meekijken." : "Let us take a look with you."}</h2><p>{isNl ? "Vertel wat u mooi vindt, wat nu niet werkt en wat u graag anders ziet. Met een paar gegevens en foto’s kunnen we het gesprek gericht beginnen." : "Tell us what you like, what is not working now and what you would love to change. A few details and photos help us start a focused conversation."}</p><div className="form-aside-points"><span>01 — {isNl ? "Deel uw wensen" : "Share your wishes"}</span><span>02 — {isNl ? "Voeg foto’s toe" : "Add photos"}</span><span>03 — {isNl ? "Wij nemen contact op" : "We contact you"}</span></div></div><div data-motion-item><QuoteForm locale={locale} services={data.services} /></div></section>
   </>;
 }
 
@@ -321,10 +319,10 @@ function StandardPage({ locale, data, pageKey }: { locale: Locale; data: PublicD
   const copy = getLocalized(page, locale);
   const isNl = locale === "nl";
   if (pageKey === "projects") return <><PageHero eyebrow="Portfolio" title={copy.title} summary={copy.summary} image="/media/projects/project-01.jpg" /><section className="section"><ProjectGallery projects={data.projects} locale={locale} /></section></>;
-  if (pageKey === "quote") return <><PageHero eyebrow={isNl ? "Uw badkamerplan" : "Your bathroom plan"} title={copy.title} summary={copy.summary} image="/media/details/renovation-bathroom.jpg" /><section className="section form-section"><div className="form-aside"><p className="eyebrow">{isNl ? "Persoonlijk contact" : "Personal contact"}</p><h2>{isNl ? "Uw plan, in een paar heldere stappen." : "Your plan, in a few clear steps."}</h2><p>{isNl ? "Vertel ons wat u wilt veranderen. Foto’s helpen ons de ruimte direct beter te begrijpen." : "Tell us what you would like to change. Photos help us understand the space immediately."}</p><div className="form-aside-points"><span>✓ {isNl ? "Vrijblijvende aanvraag" : "No-obligation request"}</span><span>✓ {isNl ? "Persoonlijke reactie" : "Personal response"}</span><span>✓ {isNl ? "Heel Nederland" : "Across the Netherlands"}</span></div><a href={`tel:${data.settings.phone}`}>{data.settings.phoneDisplay}</a><a href={`mailto:${data.settings.email}`}>{data.settings.email}</a></div><QuoteForm locale={locale} services={data.services} /></section></>;
+  if (pageKey === "quote") return <><PageHero eyebrow={isNl ? "Uw badkamerplan" : "Your bathroom plan"} title={copy.title} summary={copy.summary} image="/media/details/renovation-bathroom.jpg" /><section className="section form-section" data-reveal-group><div className="form-aside" data-motion-item><p className="eyebrow">{isNl ? "Persoonlijk contact" : "Personal contact"}</p><h2>{isNl ? "Uw plan, in een paar heldere stappen." : "Your plan, in a few clear steps."}</h2><p>{isNl ? "Vertel ons wat u wilt veranderen. Foto’s helpen ons de ruimte direct beter te begrijpen." : "Tell us what you would like to change. Photos help us understand the space immediately."}</p><div className="form-aside-points"><span>✓ {isNl ? "Vrijblijvende aanvraag" : "No-obligation request"}</span><span>✓ {isNl ? "Persoonlijke reactie" : "Personal response"}</span><span>✓ {isNl ? "Heel Nederland" : "Across the Netherlands"}</span></div><a href={`tel:${data.settings.phone}`}>{data.settings.phoneDisplay}</a><a href={`mailto:${data.settings.email}`}>{data.settings.email}</a></div><div data-motion-item><QuoteForm locale={locale} services={data.services} /></div></section></>;
   if (pageKey === "contact") return <ContactPage locale={locale} data={data} copy={copy} />;
-  if (pageKey === "about") return <><PageHero eyebrow={isNl ? "Over ons" : "About"} title={copy.title} summary={copy.summary} image="/media/projects/project-07.jpg" /><section className="section editorial"><p className="eyebrow">Formica Bouw</p><h2>{copy.body}</h2><div className="editorial-grid"><div><span>01</span><h3>{isNl ? "Aandacht" : "Attention"}</h3><p>{isNl ? "Voor de woning, het detail en de mensen die er leven." : "For the home, the detail and the people who live there."}</p></div><div><span>02</span><h3>{isNl ? "Duidelijkheid" : "Clarity"}</h3><p>{isNl ? "Heldere verwachtingen en direct contact tijdens het project." : "Clear expectations and direct contact throughout the project."}</p></div><div><span>03</span><h3>{isNl ? "Samenhang" : "Coherence"}</h3><p>{isNl ? "Ontwerp, techniek en afwerking als één geheel bekeken." : "Design, technology and finishes considered as one whole."}</p></div></div></section></>;
-  return <><PageHero eyebrow={pageKey === "privacy" ? (isNl ? "Juridisch concept" : "Legal draft") : "Cookies"} title={copy.title} summary={copy.summary} image="/media/projects/project-03.jpg" /><section className="section legal-copy"><p>{copy.body}</p><div className="legal-note"><strong>{isNl ? "Let op" : "Please note"}</strong><span>{isNl ? "Deze tekst moet vóór livegang worden gecontroleerd en goedgekeurd." : "This text must be reviewed and approved before launch."}</span></div></section></>;
+  if (pageKey === "about") return <><PageHero eyebrow={isNl ? "Over ons" : "About"} title={copy.title} summary={copy.summary} image="/media/projects/project-07.jpg" /><section className="section editorial"><p className="eyebrow" data-reveal>Formica Bouw</p><h2 data-reveal>{copy.body}</h2><div className="editorial-grid" data-reveal-group><div data-motion-item><span>01</span><h3>{isNl ? "Aandacht" : "Attention"}</h3><p>{isNl ? "Voor de woning, het detail en de mensen die er leven." : "For the home, the detail and the people who live there."}</p></div><div data-motion-item><span>02</span><h3>{isNl ? "Duidelijkheid" : "Clarity"}</h3><p>{isNl ? "Heldere verwachtingen en direct contact tijdens het project." : "Clear expectations and direct contact throughout the project."}</p></div><div data-motion-item><span>03</span><h3>{isNl ? "Samenhang" : "Coherence"}</h3><p>{isNl ? "Ontwerp, techniek en afwerking als één geheel bekeken." : "Design, technology and finishes considered as one whole."}</p></div></div></section></>;
+  return <><PageHero eyebrow={pageKey === "privacy" ? (isNl ? "Juridisch concept" : "Legal draft") : "Cookies"} title={copy.title} summary={copy.summary} image="/media/projects/project-03.jpg" /><section className="section legal-copy" data-reveal><p>{copy.body}</p><div className="legal-note"><strong>{isNl ? "Let op" : "Please note"}</strong><span>{isNl ? "Deze tekst moet vóór livegang worden gecontroleerd en goedgekeurd." : "This text must be reviewed and approved before launch."}</span></div></section></>;
 }
 
 export function PublicSite({ locale, pageKey, data }: { locale: Locale; pageKey: string; data: PublicData }) {
@@ -333,5 +331,5 @@ export function PublicSite({ locale, pageKey, data }: { locale: Locale; pageKey:
   else if (pageKey === "services") content = <ServicesPage locale={locale} data={data} />;
   else if (data.services.some((entry) => entry.slug === pageKey)) content = <ServicePage locale={locale} data={data} serviceKey={pageKey} />;
   else content = <StandardPage locale={locale} data={data} pageKey={pageKey} />;
-  return <><SiteHeader locale={locale} pageKey={pageKey} /><main>{content}</main><SiteFooter locale={locale} settings={data.settings} /><WhatsApp phone={String(data.settings.whatsapp || data.settings.phone)} locale={locale} /><MobileActionBar locale={locale} settings={data.settings} /></>;
+  return <><HomeMotion /><SiteHeader locale={locale} pageKey={pageKey} /><main>{content}</main><SiteFooter locale={locale} settings={data.settings} /><WhatsApp phone={String(data.settings.whatsapp || data.settings.phone)} locale={locale} /><MobileActionBar locale={locale} settings={data.settings} /></>;
 }

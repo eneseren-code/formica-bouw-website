@@ -67,11 +67,11 @@ export function ProjectGallery({ projects, locale, compact = false }: { projects
           ))}
         </div>
       )}
-      <div className={compact ? "project-grid project-grid-compact" : "project-grid"}>
+      <div className={compact ? "project-grid project-grid-compact" : "project-grid"} data-reveal-group>
         {shown.map((project, index) => {
           const copy = getLocalized(project, locale);
           return (
-            <button className="project-card" type="button" key={project.id} onClick={() => setActive(project)} aria-label={`${copy.title} — ${locale === "nl" ? "vergroot afbeelding" : "enlarge image"}`}>
+            <button className="project-card" type="button" key={project.id} data-motion-item onClick={() => setActive(project)} aria-label={`${copy.title} — ${locale === "nl" ? "vergroot afbeelding" : "enlarge image"}`}>
               <img src={imageFor(project)} alt={copy.title} loading={index > 2 ? "lazy" : "eager"} />
               <span className="project-caption"><strong>{copy.title}</strong><small>{labels[(project.metadata.category ?? "all") as keyof typeof labels]}</small></span>
             </button>

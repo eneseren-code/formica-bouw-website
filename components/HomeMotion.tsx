@@ -10,7 +10,7 @@ export function HomeMotion() {
     const constrainedConnection = () => Boolean(connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType ?? ""));
     const video = document.querySelector<HTMLVideoElement>("[data-home-video]");
     const hero = document.querySelector<HTMLElement>("[data-home-hero]");
-    const revealTargets = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
+    const revealTargets = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal], [data-reveal-group]"));
     const targets = Array.from(document.querySelectorAll<HTMLElement>("[data-parallax]"));
     const revealedTargets = new WeakSet<Element>();
     const sourceEntries = video
@@ -71,13 +71,13 @@ export function HomeMotion() {
       revealEnabled = enabled;
 
       if (!enabled) {
-        document.documentElement.classList.remove("home-motion-ready");
+        document.documentElement.classList.remove("public-motion-ready");
         revealObserver?.disconnect();
         revealObserver = null;
         return;
       }
 
-      document.documentElement.classList.add("home-motion-ready");
+      document.documentElement.classList.add("public-motion-ready");
       revealObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
@@ -207,7 +207,7 @@ export function HomeMotion() {
       video?.removeEventListener("playing", markPlaying);
       video?.removeEventListener("error", handleVideoFailure);
       document.removeEventListener("visibilitychange", onVisibilityChange);
-      document.documentElement.classList.remove("home-motion-ready");
+      document.documentElement.classList.remove("public-motion-ready");
     };
   }, []);
 
