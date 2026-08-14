@@ -688,7 +688,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .home-partner-motion-toggle { position: absolute; z-index: 6; right: clamp(1.3rem, 6vw, 7rem); bottom: .55rem; display: flex; min-height: 30px; align-items: center; gap: .45rem; padding: .35rem .55rem; border: 0; border-radius: 2px; background: rgba(255,255,255,.92); color: var(--muted); font-family: var(--utility); font-size: .5rem; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 0 0 1px rgba(10,39,37,.08); cursor: pointer; backdrop-filter: blur(8px); }
 .home-partner-motion-toggle > span:first-child { width: 8px; height: 9px; border-inline: 2px solid currentColor; }
 .home-partner-motion-toggle[aria-pressed="true"] > span:first-child { width: 0; height: 0; border: 5px solid transparent; border-right: 0; border-left: 7px solid currentColor; }
-.home-partner-marquee:hover .home-partner-track, .home-partner-marquee:has(.home-partner-logo:focus-visible) .home-partner-track, .home-partner-marquee.is-user-paused .home-partner-track, .home-partner-marquee.is-offscreen .home-partner-track, .home-partner-marquee.is-document-hidden .home-partner-track { animation-play-state: paused; }
+.home-partner-marquee:has(.home-partner-logo:focus-visible) .home-partner-track, .home-partner-marquee.is-user-paused .home-partner-track, .home-partner-marquee.is-offscreen .home-partner-track, .home-partner-marquee.is-document-hidden .home-partner-track { animation-play-state: paused; }
+@media (hover: hover) and (pointer: fine) {
+  .home-partner-marquee:hover .home-partner-track { animation-play-state: paused; }
+}
 @keyframes home-partner-marquee { to { transform: translateX(-50%); } }
 
 .home-expertise { position: relative; isolation: isolate; padding: clamp(5.5rem, 9vw, 9rem) clamp(1.3rem, 6vw, 7rem); overflow: hidden; background: var(--paper); }
