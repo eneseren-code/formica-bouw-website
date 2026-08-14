@@ -115,6 +115,23 @@ function HomePage({ locale, data }: { locale: Locale; data: PublicData }) {
   const expertisePoints = isNl
     ? ["Eén aanspreekpunt", "Alle vakdisciplines afgestemd", "Heldere planning en offerte"]
     : ["One point of contact", "Every trade coordinated", "Clear planning and proposal"];
+  const partnerItems = data.partners.slice(0, 4).map((partner) => {
+    const savedName = getLocalized(partner, locale).title.trim();
+    return {
+      ...partner,
+      displayName: savedName === partnerLegacyNames[partner.id] ? verifiedPartnerNames[partner.id] : savedName,
+    };
+  });
+  const renderPartnerGroup = (key: string, interactive: boolean) => (
+    <div className="home-partner-group" aria-hidden={interactive ? undefined : true} key={key}>
+      {partnerItems.map((partner) => {
+        const content = <><img src={imageFor(partner)} alt={interactive ? partner.displayName : ""} loading="lazy" /><strong>{partner.displayName}</strong></>;
+        return interactive && partner.metadata.href
+          ? <a className="home-partner-logo" href={String(partner.metadata.href)} target="_blank" rel="noreferrer" key={partner.id}>{content}</a>
+          : <div className="home-partner-logo" key={partner.id}>{content}</div>;
+      })}
+    </div>
+  );
 
   return (
     <div className="home-redesign">
@@ -166,15 +183,33 @@ function HomePage({ locale, data }: { locale: Locale; data: PublicData }) {
           <h2 id="home-partners-title">{isNl ? "Vakwerk ontstaat samen met sterke partners." : "Craftsmanship grows through strong partnerships."}</h2>
           <span>{isNl ? "Merken en professionals waarmee wij samenwerken" : "Brands and professionals we work with"}</span>
         </div>
-        <div className="home-partner-grid" data-reveal-group>
-          {data.partners.slice(0, 4).map((partner, index) => {
-            const savedName = getLocalized(partner, locale).title.trim();
-            const partnerName = savedName === partnerLegacyNames[partner.id] ? verifiedPartnerNames[partner.id] : savedName;
-            const content = <><span className="home-partner-index">0{index + 1}</span><img src={imageFor(partner)} alt={partnerName} loading="eager" /><strong>{partnerName}</strong>{partner.metadata.href && <span className="home-partner-arrow" aria-hidden="true">↗</span>}</>;
-            return partner.metadata.href
-              ? <a className="home-partner-card" href={String(partner.metadata.href)} target="_blank" rel="noreferrer" key={partner.id} data-motion-item>{content}</a>
-              : <div className="home-partner-card" key={partner.id} data-motion-item>{content}</div>;
-          })}
+        <div className="home-partner-marquee" data-partner-marquee data-reveal>
+          <div className="home-partner-lane">
+            <div className="home-partner-track">
+              {renderPartnerGroup("partner-primary", true)}
+              {renderPartnerGroup("partner-primary-clone", false)}
+            </div>
+          </div>
+          <div className="home-partner-lane home-partner-lane-color" aria-hidden="true">
+            <div className="home-partner-track">
+              {renderPartnerGroup("partner-color", false)}
+              {renderPartnerGroup("partner-color-clone", false)}
+            </div>
+          </div>
+          <div className="home-partner-focus" aria-hidden="true" />
+          <button
+            className="home-partner-motion-toggle"
+            type="button"
+            data-partner-motion-toggle
+            data-pause-label={isNl ? "Logoband pauzeren" : "Pause logo strip"}
+            data-play-label={isNl ? "Logoband hervatten" : "Resume logo strip"}
+            data-pause-copy={isNl ? "Pauze" : "Pause"}
+            data-play-copy={isNl ? "Hervat" : "Resume"}
+            aria-label={isNl ? "Logoband pauzeren" : "Pause logo strip"}
+            aria-pressed="false"
+          >
+            <span aria-hidden="true" /><span>{isNl ? "Pauze" : "Pause"}</span>
+          </button>
         </div>
       </section>
 

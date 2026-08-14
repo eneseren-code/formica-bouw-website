@@ -10,6 +10,8 @@ export function HomeMotion() {
     const constrainedConnection = () => Boolean(connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType ?? ""));
     const video = document.querySelector<HTMLVideoElement>("[data-home-video]");
     const hero = document.querySelector<HTMLElement>("[data-home-hero]");
+    const partnerMarquee = document.querySelector<HTMLElement>("[data-partner-marquee]");
+    const partnerMotionToggle = document.querySelector<HTMLButtonElement>("[data-partner-motion-toggle]");
     const revealTargets = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal], [data-reveal-group]"));
     const targets = Array.from(document.querySelectorAll<HTMLElement>("[data-parallax]"));
     const revealedTargets = new WeakSet<Element>();
@@ -22,6 +24,7 @@ export function HomeMotion() {
       : [];
     let revealObserver: IntersectionObserver | null = null;
     let heroObserver: IntersectionObserver | null = null;
+    let partnerObserver: IntersectionObserver | null = null;
     let revealEnabled = false;
     let parallaxEnabled = false;
     let videoEnabled: boolean | null = null;
@@ -176,7 +179,19 @@ export function HomeMotion() {
       hero?.classList.remove("is-video-playing");
       detachVideoSources();
     };
-    const onVisibilityChange = () => updatePlayback();
+    const updatePartnerVisibility = () => partnerMarquee?.classList.toggle("is-document-hidden", document.hidden);
+    const onPartnerMotionToggle = () => {
+      if (!partnerMarquee || !partnerMotionToggle) return;
+      const paused = partnerMarquee.classList.toggle("is-user-paused");
+      partnerMotionToggle.setAttribute("aria-pressed", String(paused));
+      partnerMotionToggle.setAttribute("aria-label", paused ? partnerMotionToggle.dataset.playLabel ?? "Resume" : partnerMotionToggle.dataset.pauseLabel ?? "Pause");
+      const copy = partnerMotionToggle.querySelector<HTMLElement>("span:last-child");
+      if (copy) copy.textContent = paused ? partnerMotionToggle.dataset.playCopy ?? "Resume" : partnerMotionToggle.dataset.pauseCopy ?? "Pause";
+    };
+    const onVisibilityChange = () => {
+      updatePlayback();
+      updatePartnerVisibility();
+    };
     const onConnectionChange = () => syncMotionPreferences();
 
     if (video && hero) {
@@ -188,6 +203,15 @@ export function HomeMotion() {
       video.addEventListener("playing", markPlaying);
       video.addEventListener("error", handleVideoFailure);
       document.addEventListener("visibilitychange", onVisibilityChange);
+    }
+
+    if (partnerMarquee) {
+      partnerObserver = new IntersectionObserver(([entry]) => {
+        partnerMarquee.classList.toggle("is-offscreen", !entry.isIntersecting);
+      }, { threshold: 0.02 });
+      partnerObserver.observe(partnerMarquee);
+      partnerMotionToggle?.addEventListener("click", onPartnerMotionToggle);
+      updatePartnerVisibility();
     }
 
     reducedMotion.addEventListener("change", syncMotionPreferences);
@@ -204,9 +228,11 @@ export function HomeMotion() {
       setVideoEnabled(false);
       revealObserver?.disconnect();
       heroObserver?.disconnect();
+      partnerObserver?.disconnect();
       video?.removeEventListener("playing", markPlaying);
       video?.removeEventListener("error", handleVideoFailure);
       document.removeEventListener("visibilitychange", onVisibilityChange);
+      partnerMotionToggle?.removeEventListener("click", onPartnerMotionToggle);
       document.documentElement.classList.remove("public-motion-ready");
     };
   }, []);
